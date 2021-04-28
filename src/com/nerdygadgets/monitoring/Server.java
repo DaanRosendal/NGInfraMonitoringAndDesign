@@ -6,6 +6,7 @@ public class Server {
 
     private String name, ip;
     private int diskMbUsed, diskMbTotal, cpuUsage;
+    private boolean online;
 
     public Server(String name, String ip) {
         this.name = name;
@@ -17,14 +18,15 @@ public class Server {
         // TODO: Actually retrieve data from server
 
         Random random = new Random();
+        this.online = random.nextBoolean();
         this.diskMbTotal = random.nextInt(1024*16);
         this.diskMbUsed = random.nextInt(diskMbTotal);
         this.cpuUsage = random.nextInt(100);
     }
 
     /**
-     * Get n
-     * @return
+     * Get name of server
+     * @return servername
      */
     public String getName() {
         return name;
@@ -36,6 +38,14 @@ public class Server {
      */
     public String getIp() {
         return ip;
+    }
+
+    /**
+     * Check if the server is online
+     * @return true if online
+     */
+    public boolean isOnline() {
+        return online;
     }
 
     /**

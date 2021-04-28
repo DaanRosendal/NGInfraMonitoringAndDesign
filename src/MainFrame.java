@@ -1,5 +1,6 @@
 import com.nerdygadgets.design.DesignFrame;
 import com.nerdygadgets.monitoring.MonitoringFrame;
+import com.nerdygadgets.monitoring.Server;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +10,7 @@ import java.awt.event.ActionListener;
 public class MainFrame extends JFrame implements ActionListener {
     private JButton jbMonitoring, jbDesign;
 
-    public MainFrame(){
+    public MainFrame() {
         setTitle("NerdyGadgets Infra Monitoring & Design");
         setSize(600, 300);
         setLayout(new FlowLayout());
@@ -30,9 +31,10 @@ public class MainFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == jbMonitoring){
-            MonitoringFrame mf = new MonitoringFrame();
-        } else if (e.getSource() == jbDesign){
+        if (e.getSource() == jbMonitoring) {
+            // Add dummy servers
+            MonitoringFrame mf = new MonitoringFrame(new Server("WS1", "192.168.2.1"), new Server("WS2", "192.168.2.2"), new Server("DB1", "192.168.3.2"), new Server("DB2", "192.168.3.1"));
+        } else if (e.getSource() == jbDesign) {
             DesignFrame df = new DesignFrame();
         }
     }
