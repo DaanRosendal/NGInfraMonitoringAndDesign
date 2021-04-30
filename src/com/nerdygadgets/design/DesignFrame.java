@@ -14,12 +14,13 @@ public class DesignFrame extends JFrame implements ActionListener {
         setTitle("NerdyGadgets Infrastructure Design Tool");
         setSize(800, 600);
         setLayout(new FlowLayout());
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setResizable(false);
 
-        jbAddFirewall = new JButton("Add Firewall Server");
+        // TODO nodig?
+        jbAddFirewall = new JButton("Add Firewall");
         jbAddFirewall.addActionListener(this);
-        add(jbAddFirewall);
+        //add(jbAddFirewall);
 
         jbAddWebServer = new JButton("Add Web Server");
         jbAddWebServer.addActionListener(this);
@@ -40,16 +41,16 @@ public class DesignFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == jbAddDatabaseServer){
             //TODO modal
-            InfrastructureComponent dbComponent = new InfrastructureComponent("databaseserver");
+            DatabaseServer dbComponent = new DatabaseServer(designPanel);
             designPanel.add(dbComponent);
         } else if (e.getSource() == jbAddFirewall){
             //TODO modal
-            InfrastructureComponent fwComponent = new InfrastructureComponent("firewall");
+            Firewall fwComponent = new Firewall(designPanel);
             designPanel.add(fwComponent);
         } else if (e.getSource() == jbAddWebServer){
             //TODO modal
-            InfrastructureComponent fwComponent = new InfrastructureComponent("webserver");
-            designPanel.add(fwComponent);
+            WebServer wsComponent = new WebServer(designPanel);
+            designPanel.add(wsComponent);
         }
         designPanel.repaint();
     }
