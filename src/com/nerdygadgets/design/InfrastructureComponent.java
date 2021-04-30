@@ -12,13 +12,9 @@ import java.io.IOException;
 import java.net.URL;
 
 public abstract class InfrastructureComponent extends JLabel {
-    private volatile int screenX = 0;
-    private volatile int screenY = 0;
-    private volatile int myX = 0;
-    private volatile int myY = 0;
+    private volatile int screenX = 0, screenY = 0, myX = 0, myY = 0;
     private BufferedImage icon;
-    JPanel parentPanel;
-
+    private JPanel parentPanel;
 
     public InfrastructureComponent(JPanel parentPanel) {
         this.parentPanel = parentPanel;

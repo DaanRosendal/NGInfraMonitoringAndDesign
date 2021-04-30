@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class DesignPanel extends JPanel {
-    InfrastructureComponent firewall;
+    private Firewall firewall;
 
     public DesignPanel(){
         setPreferredSize(new Dimension(700, 500));

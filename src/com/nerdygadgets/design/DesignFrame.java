@@ -9,7 +9,6 @@ public class DesignFrame extends JFrame implements ActionListener {
     private JButton jbAddFirewall, jbAddWebServer, jbAddDatabaseServer;
     private DesignPanel designPanel;
 
-
     public DesignFrame() {
         setTitle("NerdyGadgets Infrastructure Design Tool");
         setSize(800, 600);
@@ -43,7 +42,7 @@ public class DesignFrame extends JFrame implements ActionListener {
             //TODO modal
             DatabaseServer dbComponent = new DatabaseServer(designPanel);
             designPanel.add(dbComponent);
-        } else if (e.getSource() == jbAddFirewall){
+        } else if (e.getSource() == jbAddFirewall){ //TODO nodig?
             //TODO modal
             Firewall fwComponent = new Firewall(designPanel);
             designPanel.add(fwComponent);
