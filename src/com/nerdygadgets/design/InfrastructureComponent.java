@@ -16,8 +16,8 @@ public class InfrastructureComponent  extends JLabel {
     private volatile int screenY = 0;
     private volatile int myX = 0;
     private volatile int myY = 0;
-    BufferedImage icon;
-    JLabel jlIcon;
+    private BufferedImage icon;
+    private JLabel jlIcon;
 
     public InfrastructureComponent(String componentType) {
         try{

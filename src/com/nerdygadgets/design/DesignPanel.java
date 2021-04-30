@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class DesignPanel extends JPanel {
-
     public DesignPanel(){
 
         setPreferredSize(new Dimension(700, 500));

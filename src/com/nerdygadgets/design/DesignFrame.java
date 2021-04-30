@@ -6,8 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class DesignFrame extends JFrame implements ActionListener {
-    JButton jbAddFirewall, jbAddWebServer, jbAddDatabaseServer;
-    DesignPanel designPanel;
+    private JButton jbAddFirewall, jbAddWebServer, jbAddDatabaseServer;
+    private DesignPanel designPanel;
+
 
     public DesignFrame() {
         setTitle("NerdyGadgets Infrastructure Design Tool");
