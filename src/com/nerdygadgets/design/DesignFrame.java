@@ -6,14 +6,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class DesignFrame extends JFrame implements ActionListener {
-    JButton jbAddRouter, jbAddWebServer, jbAddDatabaseServer;
+    JButton jbAddFirewall, jbAddWebServer, jbAddDatabaseServer;
+    DesignPanel designPanel;
 
     public DesignFrame() {
-        setTitle("NerdyGadgets Infrastructure Designer");
-        setSize(600, 300);
+        setTitle("NerdyGadgets Infrastructure Design Tool");
+        setSize(800, 600);
         setLayout(new FlowLayout());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+
+        jbAddFirewall = new JButton("Add Firewall Server");
+        jbAddFirewall.addActionListener(this);
+        add(jbAddFirewall);
 
         jbAddWebServer = new JButton("Add Web Server");
         jbAddWebServer.addActionListener(this);
@@ -23,12 +28,28 @@ public class DesignFrame extends JFrame implements ActionListener {
         jbAddDatabaseServer.addActionListener(this);
         add(jbAddDatabaseServer);
 
+        designPanel = new DesignPanel();
+        add(designPanel);
+
         setVisible(true);
         setLocationRelativeTo(null);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        if(e.getSource() == jbAddDatabaseServer){
+            //TODO modal
+            InfrastructureComponent dbComponent = new InfrastructureComponent("databaseserver");
+            designPanel.add(dbComponent);
+        } else if (e.getSource() == jbAddFirewall){
+            //TODO modal
+            InfrastructureComponent fwComponent = new InfrastructureComponent("firewall");
+            designPanel.add(fwComponent);
+        } else if (e.getSource() == jbAddWebServer){
+            //TODO modal
+            InfrastructureComponent fwComponent = new InfrastructureComponent("webserver");
+            designPanel.add(fwComponent);
+        }
+        designPanel.repaint();
     }
 }
