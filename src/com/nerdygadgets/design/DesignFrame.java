@@ -13,7 +13,7 @@ public class DesignFrame extends JFrame implements ActionListener {
         setTitle("NerdyGadgets Infrastructure Design Tool");
         setSize(800, 600);
         setLayout(new FlowLayout());
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
         jbAddFirewall = new JButton("Add Firewall Server");

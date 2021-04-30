@@ -15,7 +15,7 @@ public class MonitoringFrame extends JFrame implements ActionListener {
     public MonitoringFrame(Server... servers) {
         setTitle("NerdyGadgets Infra Monitoring");
         setSize(600, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
         this.panel = new MonitoringPanel(servers);
