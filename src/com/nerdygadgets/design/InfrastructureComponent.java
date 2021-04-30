@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 
-public class InfrastructureComponent  extends JLabel {
+public class InfrastructureComponent extends JLabel {
     private volatile int screenX = 0;
     private volatile int screenY = 0;
     private volatile int myX = 0;
@@ -41,7 +41,11 @@ public class InfrastructureComponent  extends JLabel {
         // Drag and drop functionality
         addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) { }
+            public void mouseClicked(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON3){ // Right mouse button click
+                    suicide();
+                }
+            }
 
             @Override
             public void mousePressed(MouseEvent e) {
@@ -53,7 +57,9 @@ public class InfrastructureComponent  extends JLabel {
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) { }
+            public void mouseReleased(MouseEvent e) {
+
+            }
 
             @Override
             public void mouseEntered(MouseEvent e) { }
@@ -76,4 +82,10 @@ public class InfrastructureComponent  extends JLabel {
         });
     }
 
+    // Removes the corresponding JLabel from the DesignPanel
+    public void suicide(){
+        Container parent = this.getParent();
+        parent.remove(this);
+        parent.repaint();
+    }
 }

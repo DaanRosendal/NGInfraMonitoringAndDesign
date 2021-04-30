@@ -39,6 +39,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 monitoringFrame = new MonitoringFrame(new Server("WS1", "192.168.2.1"), new Server("WS2", "192.168.2.2"), new Server("DB1", "192.168.3.2"), new Server("DB2", "192.168.3.1"));
             } else {
                 monitoringFrame.toFront();
+                monitoringFrame.setVisible(true);
             }
         } else if (e.getSource() == jbDesign) {
             // Check if frame has been instantiated
@@ -46,6 +47,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 designFrame = new DesignFrame();
             } else {
                 designFrame.toFront();
+                designFrame.setVisible(true);
             }
         }
     }
