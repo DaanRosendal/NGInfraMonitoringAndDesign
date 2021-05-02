@@ -1,32 +1,37 @@
-package com.nerdygadgets.design;
+package com.nerdygadgets.design.components;
+
+import com.nerdygadgets.design.components.DatabaseServer;
+import com.nerdygadgets.design.components.Firewall;
+import com.nerdygadgets.design.components.WebServer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
+import java.text.DecimalFormat;
 
 public abstract class InfrastructureComponent extends JLabel {
     private volatile int screenX = 0, screenY = 0, myX = 0, myY = 0;
     private BufferedImage icon;
     private JPanel parentPanel;
+    private String name;
+    private double availability, annualPrice;
 
-    public InfrastructureComponent(JPanel parentPanel) {
+    public InfrastructureComponent(JPanel parentPanel, String name, double availability, double annualPrice) {
         this.parentPanel = parentPanel;
+        this.name = name;
+        this.availability = availability;
+        this.annualPrice = annualPrice;
         assignIcon();
 
         // Drag and drop functionality
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getButton() == MouseEvent.BUTTON3){ // Right mouse button click
-                    suicide();
-                }
+
             }
 
             @Override
@@ -36,6 +41,11 @@ public abstract class InfrastructureComponent extends JLabel {
 
                 myX = getX();
                 myY = getY();
+
+                // Remove this component if right mouse button is pressed
+                if(e.getButton() == MouseEvent.BUTTON3){
+                    suicide();
+                }
             }
 
             @Override
@@ -50,6 +60,10 @@ public abstract class InfrastructureComponent extends JLabel {
         addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON3){ // Right mouse button click
+                    suicide();
+                }
+
                 int deltaX = e.getXOnScreen() - screenX;
                 int deltaY = e.getYOnScreen() - screenY;
 
@@ -107,14 +121,16 @@ public abstract class InfrastructureComponent extends JLabel {
         try{
             // Determine icon
             if(this instanceof Firewall){
-                icon = ImageIO.read(this.getClass().getResource("icons/firewall.png"));
+                icon = ImageIO.read(this.getClass().getResource("../icons/firewall.png"));
             } else if(this instanceof DatabaseServer){
-                icon = ImageIO.read(this.getClass().getResource("icons/databaseserver.png"));
+                icon = ImageIO.read(this.getClass().getResource("../icons/databaseserver.png"));
             } else if(this instanceof WebServer){
-                icon = ImageIO.read(this.getClass().getResource("icons/webserver.png"));
+                icon = ImageIO.read(this.getClass().getResource("../icons/webserver.png"));
             }
         } catch(IOException e){
             System.err.println("File not found");
+        } catch(Exception e){
+            System.err.println("Something went wrong while loading the icons");
         }
 
         // Assign icon
@@ -129,5 +145,31 @@ public abstract class InfrastructureComponent extends JLabel {
 
     public int getParentPanelHeight(){
         return parentPanel.getHeight();
+    }
+
+    public String getComponentName() {
+        return name;
+    }
+
+    public double getAvailability() {
+        return availability;
+    }
+
+    public double getAnnualPrice() {
+        return annualPrice;
+    }
+
+    @Override
+    public String toString() {
+        return name + removeTrailingZeros(availability) + "%) €" + removeTrailingZeros(annualPrice);
+    }
+
+    // Remove trailing zeros from a double, example: 90.0 becomes 90
+    public String removeTrailingZeros(double number){
+        if(number % 1 == 0){
+            return String.format("%.0f", number);
+        } else {
+            return String.valueOf(number);
+        }
     }
 }

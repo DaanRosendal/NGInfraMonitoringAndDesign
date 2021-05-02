@@ -1,5 +1,10 @@
 package com.nerdygadgets.design;
 
+import com.nerdygadgets.design.components.DatabaseServer;
+import com.nerdygadgets.design.components.Firewall;
+import com.nerdygadgets.design.components.InfrastructureComponent;
+import com.nerdygadgets.design.components.WebServer;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,11 +20,6 @@ public class DesignFrame extends JFrame implements ActionListener {
         setLayout(new FlowLayout());
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setResizable(false);
-
-        // TODO nodig?
-        jbAddFirewall = new JButton("Add Firewall");
-        jbAddFirewall.addActionListener(this);
-        //add(jbAddFirewall);
 
         jbAddWebServer = new JButton("Add Web Server");
         jbAddWebServer.addActionListener(this);
@@ -39,17 +39,17 @@ public class DesignFrame extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == jbAddDatabaseServer){
-            //TODO modal
-            DatabaseServer dbComponent = new DatabaseServer(designPanel);
-            designPanel.add(dbComponent);
-        } else if (e.getSource() == jbAddFirewall){ //TODO nodig?
-            //TODO modal
-            Firewall fwComponent = new Firewall(designPanel);
-            designPanel.add(fwComponent);
+            ComponentDialog cd = new ComponentDialog(this, designPanel, "databaseserver");
+            if(cd.getIsOk()){
+                InfrastructureComponent dbComponent = cd.getComponent();
+                designPanel.add(dbComponent);
+            }
         } else if (e.getSource() == jbAddWebServer){
-            //TODO modal
-            WebServer wsComponent = new WebServer(designPanel);
-            designPanel.add(wsComponent);
+            ComponentDialog cd = new ComponentDialog(this, designPanel, "webserver");
+            if(cd.getIsOk()){
+                InfrastructureComponent wComponent = cd.getComponent();
+                designPanel.add(wComponent);
+            }
         }
         designPanel.repaint();
     }
