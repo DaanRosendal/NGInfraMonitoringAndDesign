@@ -7,16 +7,32 @@ import com.nerdygadgets.design.components.WebServer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
 
-public class DesignPanel extends JPanel {
+public class DesignPanel extends JPanel implements ComponentListener {
     private Firewall firewall;
+    private JFrame frame;
 
-    public DesignPanel(){
-        setPreferredSize(new Dimension(700, 500));
+    public DesignPanel(JFrame frame){
+        this.frame = frame;
+        frame.addComponentListener(this);
+        setResponsiveSize();
         setBackground(Color.white);
         firewall = new Firewall(this);
         add(firewall);
         repaint();
+    }
+
+    public ArrayList<InfrastructureComponent> getInfrastructureComponents(){
+        ArrayList<InfrastructureComponent> components = new ArrayList<InfrastructureComponent>();
+        for(Component c : this.getComponents()){
+            if(c instanceof InfrastructureComponent){
+                InfrastructureComponent ic = (InfrastructureComponent) c;
+                components.add(ic);
+            }
+        }
+        return components;
     }
 
     @Override
@@ -44,5 +60,29 @@ public class DesignPanel extends JPanel {
                 }
             }
         }
+    }
+
+    @Override
+    public void componentResized(ComponentEvent e) {
+        setResponsiveSize();
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {
+
+    }
+
+    @Override
+    public void componentShown(ComponentEvent e) {
+
+    }
+
+    @Override
+    public void componentHidden(ComponentEvent e) {
+
+    };
+
+    public void setResponsiveSize(){
+        setPreferredSize(new Dimension(frame.getWidth()-25, frame.getHeight()-80));
     }
 }
