@@ -51,12 +51,12 @@ public class DesignPanel extends JPanel implements ComponentListener {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
                 if(ic instanceof Firewall){
                     g.drawString(ic.getComponentName(), c.getX(), c.getY()+64);
-                    g.drawString(ic.getAvailability() + "%", c.getX(), c.getY()+79);
-                    g.drawString("€" + ic.getAnnualPrice(), c.getX(), c.getY()+94);
+                    g.drawString(ic.removeTrailingZeros(ic.getAvailability()) + "%", c.getX(), c.getY()+79);
+                    g.drawString("€" + ic.removeTrailingZeros(ic.getAnnualPrice()), c.getX(), c.getY()+94);
                 } else {
                     g.drawString(ic.getComponentName(), c.getX(), c.getY()+74);
-                    g.drawString(ic.getAvailability() + "%", c.getX(), c.getY()+89);
-                    g.drawString("€" + ic.getAnnualPrice(), c.getX(), c.getY()+104);
+                    g.drawString(ic.removeTrailingZeros(ic.getAvailability()) + "%", c.getX(), c.getY()+89);
+                    g.drawString("€" + ic.removeTrailingZeros(ic.getAnnualPrice()), c.getX(), c.getY()+104);
                 }
             }
         }
@@ -68,19 +68,13 @@ public class DesignPanel extends JPanel implements ComponentListener {
     }
 
     @Override
-    public void componentMoved(ComponentEvent e) {
-
-    }
+    public void componentMoved(ComponentEvent e) {}
 
     @Override
-    public void componentShown(ComponentEvent e) {
-
-    }
+    public void componentShown(ComponentEvent e) {}
 
     @Override
-    public void componentHidden(ComponentEvent e) {
-
-    };
+    public void componentHidden(ComponentEvent e) {}
 
     public void setResponsiveSize(){
         setPreferredSize(new Dimension(frame.getWidth()-25, frame.getHeight()-80));

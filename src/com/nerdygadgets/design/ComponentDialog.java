@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 
 public class ComponentDialog extends JDialog implements ActionListener {
     private JLabel jlComponent;
-
     private JComboBox jcComponent;
     private InfrastructureComponent[] components;
     private JButton jbOK, jbCancel;

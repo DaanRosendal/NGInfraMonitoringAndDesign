@@ -1,9 +1,5 @@
 package com.nerdygadgets.design.components;
 
-import com.nerdygadgets.design.components.DatabaseServer;
-import com.nerdygadgets.design.components.Firewall;
-import com.nerdygadgets.design.components.WebServer;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.MouseEvent;
@@ -11,7 +7,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 public abstract class InfrastructureComponent extends JLabel {
     private volatile int screenX = 0, screenY = 0, myX = 0, myY = 0;
@@ -159,6 +154,10 @@ public abstract class InfrastructureComponent extends JLabel {
         return annualPrice;
     }
 
+    public JPanel getParentPanel() {
+        return parentPanel;
+    }
+
     @Override
     public String toString() {
         return name + removeTrailingZeros(availability) + "%) €" + removeTrailingZeros(annualPrice);
@@ -172,4 +171,5 @@ public abstract class InfrastructureComponent extends JLabel {
             return String.valueOf(number);
         }
     }
+
 }
