@@ -8,6 +8,8 @@ import com.nerdygadgets.design.components.WebServer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class DesignPanel extends JPanel implements ComponentListener {
@@ -45,8 +47,12 @@ public class DesignPanel extends JPanel implements ComponentListener {
         for (Component c : this.getComponents()) {
             if (c instanceof Firewall) {
                 firewall = (Firewall) c;
+                break;
             }
         }
+
+        g.drawString("Prijs: €" + calculateTotalAnnualPrice(), getWidth()-200, 10);
+        g.drawString("Beschikbaarheid: " + calculateTotalAvailability() + "%", getWidth()-200, 25);
 
         for (Component c : this.getComponents()) {
             // Draw lines from every component to the firewall
@@ -97,6 +103,48 @@ public class DesignPanel extends JPanel implements ComponentListener {
                 ic.setPanelX(c.getX());
                 ic.setPanelY(c.getY());
             }
+        }
+    }
+
+    public String calculateTotalAnnualPrice(){
+        double totalAnnualPrice = 0;
+        for(Component c : this.getComponents()) {
+            if (c instanceof InfrastructureComponent) {
+                InfrastructureComponent ic = (InfrastructureComponent) c;
+                totalAnnualPrice += ic.getAnnualPrice();
+            }
+        }
+        return removeTrailingZeros(totalAnnualPrice);
+    }
+
+    public String calculateTotalAvailability(){
+        double totalAvailability = 0;
+        boolean firstValue = true;
+        for(Component c : this.getComponents()) {
+            if (c instanceof InfrastructureComponent) {
+                InfrastructureComponent ic = (InfrastructureComponent) c;
+                if(firstValue){
+                    System.out.println("firewall: \t" + (1-(ic.getAvailability()/100)));
+                    totalAvailability = (1-(ic.getAvailability()/100));
+                    firstValue = false;
+                } else {
+                    System.out.println("component 1:" + (1-(ic.getAvailability()/100)));
+                    totalAvailability *= (1-(ic.getAvailability()/100));
+                }
+            }
+        }
+
+        System.out.println("Resultaat: \t"+ (1-totalAvailability));
+
+        return removeTrailingZeros((double) Math.round(((1-totalAvailability)*100) * 1000d)/1000d);
+    }
+
+    // Remove trailing zeros from a double, example: 90.0 becomes 90
+    public String removeTrailingZeros(double number){
+        if(number % 1 == 0){
+            return String.format("%.0f", number);
+        } else {
+            return String.valueOf(number);
         }
     }
 }

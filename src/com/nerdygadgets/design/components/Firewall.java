@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class Firewall extends InfrastructureComponent {
     public Firewall(JPanel parentPanel, String name, double availability, double annualPrice) {
-        super(parentPanel, "pfSense", 99.998, 4000);
+        super(parentPanel, name, availability, annualPrice);
     }
 
     public Firewall(JPanel parentPanel, String name, double availability, double annualPrice, int panelX, int panelY){
