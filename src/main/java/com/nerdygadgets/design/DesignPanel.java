@@ -24,24 +24,12 @@ public class DesignPanel extends JPanel implements ComponentListener {
         repaint();
     }
 
-    public ArrayList<InfrastructureComponent> getInfrastructureComponents() {
-        ArrayList<InfrastructureComponent> components = new ArrayList<InfrastructureComponent>();
-        for (Component c : this.getComponents()) {
-            if (c instanceof InfrastructureComponent) {
-                InfrastructureComponent ic = (InfrastructureComponent) c;
-                components.add(ic);
-            }
-        }
-        return components;
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setFont(new Font("SansSerif", Font.BOLD, 12));
 
-        // TODO show total cost/availability
-
+        // Get firewall
         Firewall firewall = null;
         for (Component c : this.getComponents()) {
             if (c instanceof Firewall) {
@@ -50,8 +38,10 @@ public class DesignPanel extends JPanel implements ComponentListener {
             }
         }
 
-        g.drawString("Prijs: €" + calculateTotalAnnualPrice(), getWidth() - 200, 10);
-        g.drawString("Beschikbaarheid: " + calculateTotalAvailability() + "%", getWidth() - 200, 25);
+        // Draw annual price & availability
+        g.drawString("Prijs per jaar: €" + calculateTotalAnnualPrice(), getWidth() - 150, 10);
+        g.drawString("Beschikbaarheid: " + calculateTotalAvailability() + "%", getWidth() - 150, 25);
+
 
         for (Component c : this.getComponents()) {
             // Draw lines from every component to the firewall
@@ -81,24 +71,21 @@ public class DesignPanel extends JPanel implements ComponentListener {
     }
 
     @Override
-    public void componentMoved(ComponentEvent e) {
-    }
+    public void componentMoved(ComponentEvent e) { }
 
     @Override
-    public void componentShown(ComponentEvent e) {
-    }
+    public void componentShown(ComponentEvent e) { }
 
     @Override
-    public void componentHidden(ComponentEvent e) {
-    }
+    public void componentHidden(ComponentEvent e) { }
 
-    // Set panel size so it fits in the parent JFrame
+    // Set panel size relative to the parent JFrame so it fits in the parent JFrame
     public void setResponsiveSize() {
         setPreferredSize(new Dimension(frame.getWidth() - 25, frame.getHeight() - 80));
     }
 
     // Register component x & y panel values
-    public void determineComponentPositions() {
+    public void updateComponentPositions() {
         for (Component c : this.getComponents()) {
             if (c instanceof InfrastructureComponent) {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
@@ -108,6 +95,7 @@ public class DesignPanel extends JPanel implements ComponentListener {
         }
     }
 
+    // Calculate the annual price of all components combined
     public String calculateTotalAnnualPrice() {
         double totalAnnualPrice = 0;
         for (Component c : this.getComponents()) {
@@ -119,6 +107,7 @@ public class DesignPanel extends JPanel implements ComponentListener {
         return removeTrailingZeros(totalAnnualPrice);
     }
 
+    // Calculate the total availability
     public String calculateTotalAvailability() {
         double firewallAvailability = 1;
         double webAvailability = 1;
@@ -138,6 +127,7 @@ public class DesignPanel extends JPanel implements ComponentListener {
         }
         double totalAvailability = (1 - firewallAvailability) * (1 - webAvailability) * (1 - databaseAvailability);
 
+        // Round the result to 3 decimals and remove potential trailing zeros
         return removeTrailingZeros((double) Math.round((totalAvailability*100) * 1000d)/1000d);
     }
 

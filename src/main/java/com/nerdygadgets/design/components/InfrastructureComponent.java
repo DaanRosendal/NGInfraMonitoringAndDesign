@@ -31,11 +31,6 @@ public abstract class InfrastructureComponent extends JLabel {
         // Drag and drop functionality
         addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
             public void mousePressed(MouseEvent e) {
                 screenX = e.getXOnScreen();
                 screenY = e.getYOnScreen();
@@ -50,6 +45,9 @@ public abstract class InfrastructureComponent extends JLabel {
             }
 
             @Override
+            public void mouseClicked(MouseEvent e) { }
+
+            @Override
             public void mouseReleased(MouseEvent e) { }
 
             @Override
@@ -61,10 +59,12 @@ public abstract class InfrastructureComponent extends JLabel {
         addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                // Remove component on right click
                 if(e.getButton() == MouseEvent.BUTTON3){ // Right mouse button click
                     suicide();
                 }
 
+                // Drag and drop
                 int deltaX = e.getXOnScreen() - screenX;
                 int deltaY = e.getYOnScreen() - screenY;
 
@@ -121,9 +121,7 @@ public abstract class InfrastructureComponent extends JLabel {
         }
     }
 
-    public void repaintParentPanel(){
-        parentPanel.repaint();
-    }
+
 
     public void assignIconAndType(){
         try{
@@ -152,55 +150,6 @@ public abstract class InfrastructureComponent extends JLabel {
         setOpaque(false);
     }
 
-    public int getParentPanelWidth(){
-        return parentPanel.getWidth();
-    }
-
-    public int getParentPanelHeight(){
-        return parentPanel.getHeight();
-    }
-
-    public String getComponentName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public double getAvailability() {
-        return availability;
-    }
-
-    public double getAnnualPrice() {
-        return annualPrice;
-    }
-
-    public JPanel getParentPanel() {
-        return parentPanel;
-    }
-
-    public int getPanelX() {
-        return panelX;
-    }
-
-    public void setPanelX(int panelX) {
-        this.panelX = panelX;
-    }
-
-    public int getPanelY() {
-        return panelY;
-    }
-
-    public void setPanelY(int panelY) {
-        this.panelY = panelY;
-    }
-
-    @Override
-    public String toString() {
-        return name + removeTrailingZeros(availability) + "%) €" + removeTrailingZeros(annualPrice);
-    }
-
     // Remove trailing zeros from a double, example: 90.0 becomes 90
     public String removeTrailingZeros(double number){
         if(number % 1 == 0){
@@ -210,4 +159,46 @@ public abstract class InfrastructureComponent extends JLabel {
         }
     }
 
+    // Getters & Setters
+    public int getParentPanelWidth(){
+        return parentPanel.getWidth();
+    }
+    public int getParentPanelHeight(){
+        return parentPanel.getHeight();
+    }
+    public String getComponentName() {
+        return name;
+    }
+    public String getType() {
+        return type;
+    }
+    public double getAvailability() {
+        return availability;
+    }
+    public double getAnnualPrice() {
+        return annualPrice;
+    }
+    public JPanel getParentPanel() {
+        return parentPanel;
+    }
+    public int getPanelX() {
+        return panelX;
+    }
+    public void setPanelX(int panelX) {
+        this.panelX = panelX;
+    }
+    public int getPanelY() {
+        return panelY;
+    }
+    public void setPanelY(int panelY) {
+        this.panelY = panelY;
+    }
+    public void repaintParentPanel(){
+        parentPanel.repaint();
+    }
+
+    @Override
+    public String toString() {
+        return name + " (" + removeTrailingZeros(availability) + "%) €" + removeTrailingZeros(annualPrice);
+    }
 }

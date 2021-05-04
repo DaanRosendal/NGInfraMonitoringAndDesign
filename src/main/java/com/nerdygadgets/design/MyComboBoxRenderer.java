@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 
 // Class to give comboboxes a standard 'title/option'
-// to display the purpose of the combobox
 class MyComboBoxRenderer extends JLabel implements ListCellRenderer {
     private String _title;
 
