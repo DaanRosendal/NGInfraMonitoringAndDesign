@@ -138,8 +138,6 @@ public class DesignPanel extends JPanel implements ComponentListener {
         }
         double totalAvailability = (1 - firewallAvailability) * (1 - webAvailability) * (1 - databaseAvailability);
 
-        // System.out.println("Resultaat: \t" + totalAvailability);
-
         return removeTrailingZeros((double) Math.round((totalAvailability*100) * 1000d)/1000d);
     }
 

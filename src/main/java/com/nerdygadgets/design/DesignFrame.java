@@ -97,7 +97,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                 }
             }
             fileContent += "]";
-            System.out.println(fileContent);
 
             // Save json strings to a file
             JFileChooser fileChooser = new JFileChooser();
@@ -107,7 +106,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 File fileToSave = fileChooser.getSelectedFile();
-                System.out.println("Save as file: " + fileToSave.getAbsolutePath());
 
                 FileWriter file = null;
                 try {
@@ -130,7 +128,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             int option = choice.showOpenDialog(this);
             if(option == JFileChooser.APPROVE_OPTION){
                 File file = choice.getSelectedFile();
-                System.out.println(file.getAbsolutePath());
                 try {
                     Scanner reader = new Scanner(file);
                     JsonParser parser = new JsonParser();
@@ -145,8 +142,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                         double annualPrice = jo.get("annualPrice").getAsDouble();
                         int panelX = jo.get("panelX").getAsInt();
                         int panelY = jo.get("panelY").getAsInt();
-
-                        System.out.println(type);
 
                         if(type.equals("firewall")){
                             Firewall fw = new Firewall(designPanel, name, availability, annualPrice, panelX, panelY);
