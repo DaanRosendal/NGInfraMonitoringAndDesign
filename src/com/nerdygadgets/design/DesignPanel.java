@@ -19,8 +19,7 @@ public class DesignPanel extends JPanel implements ComponentListener {
         frame.addComponentListener(this);
         setResponsiveSize();
         setBackground(Color.white);
-        firewall = new Firewall(this);
-        add(firewall);
+        setLayout(null);
         repaint();
     }
 
@@ -39,6 +38,8 @@ public class DesignPanel extends JPanel implements ComponentListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+        // TODO show total cost/availability
 
         // Draw lines from every component to the firewall
         for(Component c : this.getComponents()){
@@ -76,7 +77,24 @@ public class DesignPanel extends JPanel implements ComponentListener {
     @Override
     public void componentHidden(ComponentEvent e) {}
 
+    // Set panel size so it fits in the parent JFrame
     public void setResponsiveSize(){
         setPreferredSize(new Dimension(frame.getWidth()-25, frame.getHeight()-80));
+    }
+
+    public void addFirewall(){
+        firewall = new Firewall(this);
+        add(firewall);
+    }
+
+    // Register component x & y panel values
+    public void determineComponentPositions(){
+        for(Component c : this.getComponents()){
+            if(c instanceof InfrastructureComponent){
+                InfrastructureComponent ic = (InfrastructureComponent) c;
+                ic.setPanelX(c.getX());
+                ic.setPanelY(c.getY());
+            }
+        }
     }
 }
