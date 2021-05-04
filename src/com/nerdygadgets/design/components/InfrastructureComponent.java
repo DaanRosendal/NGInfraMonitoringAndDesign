@@ -105,6 +105,13 @@ public abstract class InfrastructureComponent extends JLabel {
         });
     }
 
+    public InfrastructureComponent(JPanel parentPanel, String name, double availability, double annualPrice, int panelX, int panelY){
+        this(parentPanel, name, availability, annualPrice);
+        this.panelX = panelX;
+        this.panelY = panelY;
+        setLocation(panelX, panelY);
+    }
+
     // Removes this JLabel from the DesignPanel
     public void suicide(){
         // Check if JLabel isnt a Firewall

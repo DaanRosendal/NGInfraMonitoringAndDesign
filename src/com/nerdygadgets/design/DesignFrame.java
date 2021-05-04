@@ -1,13 +1,13 @@
 package com.nerdygadgets.design;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.nerdygadgets.design.components.DatabaseServer;
 import com.nerdygadgets.design.components.Firewall;
 import com.nerdygadgets.design.components.InfrastructureComponent;
 import com.nerdygadgets.design.components.WebServer;
 
 import javax.swing.*;
+import javax.xml.crypto.Data;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -36,6 +36,9 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
         designPanel = new DesignPanel(this);
 
+        Firewall fw = new Firewall(designPanel, "pfSense", 99.998, 4000);
+        designPanel.add(fw);
+
         WebServer w1 = new WebServer(designPanel, "HAL9001W", 80, 2200);
         WebServer w2 = new WebServer(designPanel, "HAL9002W", 90, 3200);
         WebServer w3 = new WebServer(designPanel, "HAL9003W", 95, 5100);
@@ -57,7 +60,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         jcDatabaseservers.addActionListener(this);
 
         add(designPanel);
-        designPanel.addFirewall();
         designPanel.determineComponentPositions();
 
         addWindowStateListener(this);
@@ -68,6 +70,10 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == jbSave) {
+            // Make sure panelX and panelY values
+            // are correct for each component
+            designPanel.determineComponentPositions();
+
             ArrayList<InfrastructureComponent> components = designPanel.getInfrastructureComponents();
 
             Gson gson = new GsonBuilder()
@@ -75,10 +81,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                     .setPrettyPrinting()
                     .create();
             String fileContent = "[";
-
-            // Make sure panelX and panelY values
-            // are correct for each component
-            designPanel.determineComponentPositions();
 
             // Convert components on the design panel
             // to json strings
@@ -128,9 +130,38 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             int option = choice.showOpenDialog(this);
             if(option == JFileChooser.APPROVE_OPTION){
                 File file = choice.getSelectedFile();
+                System.out.println(file.getAbsolutePath());
                 try {
                     Scanner reader = new Scanner(file);
-                    InfrastructureComponent ic = gson.fromJson(new FileReader(file), InfrastructureComponent.class);
+                    JsonParser parser = new JsonParser();
+                    JsonArray a = (JsonArray) parser.parse(new FileReader(file.getAbsolutePath()));
+                    designPanel.removeAll();
+                    for(Object o : a){
+                        JsonObject jo = (JsonObject) o;
+
+                        String name = jo.get("name").getAsString();
+                        String type = jo.get("type").getAsString();
+                        double availability = jo.get("availability").getAsDouble();
+                        double annualPrice = jo.get("annualPrice").getAsDouble();
+                        int panelX = jo.get("panelX").getAsInt();
+                        int panelY = jo.get("panelY").getAsInt();
+
+                        System.out.println(type);
+
+                        if(type.equals("firewall")){
+                            Firewall fw = new Firewall(designPanel, name, availability, annualPrice, panelX, panelY);
+                            designPanel.add(fw);
+                        } else if(type.equals("databaseserver")){
+                            DatabaseServer dbs = new DatabaseServer(designPanel, name, availability, annualPrice, panelX, panelY);
+                            designPanel.add(dbs);
+                        } else if(type.equals("webserver")){
+                            WebServer ws = new WebServer(designPanel, name, availability, annualPrice, panelX, panelY);
+                            designPanel.add(ws);
+                        } else {
+                            System.err.println("The json object has an invalid type: " + type);
+                        }
+                    }
+                    designPanel.repaint();
                 } catch (FileNotFoundException fileNotFoundException) {
                     fileNotFoundException.printStackTrace();
                 }

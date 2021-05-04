@@ -41,23 +41,30 @@ public class DesignPanel extends JPanel implements ComponentListener {
 
         // TODO show total cost/availability
 
-        // Draw lines from every component to the firewall
-        for(Component c : this.getComponents()){
-            if(c instanceof WebServer || c instanceof DatabaseServer){
-                g.drawLine(firewall.getX()+32, firewall.getY()+32, c.getX()+32, c.getY()+32);
+        Firewall firewall = null;
+        for (Component c : this.getComponents()) {
+            if (c instanceof Firewall) {
+                firewall = (Firewall) c;
+            }
+        }
+
+        for (Component c : this.getComponents()) {
+            // Draw lines from every component to the firewall
+            if (c instanceof WebServer || c instanceof DatabaseServer) {
+                g.drawLine(firewall.getX() + 32, firewall.getY() + 32, c.getX() + 32, c.getY() + 32);
             }
 
             // Draw details under component
-            if(c instanceof InfrastructureComponent){
+            if (c instanceof InfrastructureComponent) {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
-                if(ic instanceof Firewall){
-                    g.drawString(ic.getComponentName(), c.getX(), c.getY()+64);
-                    g.drawString(ic.removeTrailingZeros(ic.getAvailability()) + "%", c.getX(), c.getY()+79);
-                    g.drawString("€" + ic.removeTrailingZeros(ic.getAnnualPrice()), c.getX(), c.getY()+94);
+                if (ic instanceof Firewall) {
+                    g.drawString(ic.getComponentName(), c.getX(), c.getY() + 64);
+                    g.drawString(ic.removeTrailingZeros(ic.getAvailability()) + "%", c.getX(), c.getY() + 79);
+                    g.drawString("€" + ic.removeTrailingZeros(ic.getAnnualPrice()), c.getX(), c.getY() + 94);
                 } else {
-                    g.drawString(ic.getComponentName(), c.getX(), c.getY()+74);
-                    g.drawString(ic.removeTrailingZeros(ic.getAvailability()) + "%", c.getX(), c.getY()+89);
-                    g.drawString("€" + ic.removeTrailingZeros(ic.getAnnualPrice()), c.getX(), c.getY()+104);
+                    g.drawString(ic.getComponentName(), c.getX(), c.getY() + 74);
+                    g.drawString(ic.removeTrailingZeros(ic.getAvailability()) + "%", c.getX(), c.getY() + 89);
+                    g.drawString("€" + ic.removeTrailingZeros(ic.getAnnualPrice()), c.getX(), c.getY() + 104);
                 }
             }
         }
@@ -80,11 +87,6 @@ public class DesignPanel extends JPanel implements ComponentListener {
     // Set panel size so it fits in the parent JFrame
     public void setResponsiveSize(){
         setPreferredSize(new Dimension(frame.getWidth()-25, frame.getHeight()-80));
-    }
-
-    public void addFirewall(){
-        firewall = new Firewall(this);
-        add(firewall);
     }
 
     // Register component x & y panel values
