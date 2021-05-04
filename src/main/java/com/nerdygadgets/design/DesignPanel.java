@@ -7,16 +7,15 @@ import com.nerdygadgets.design.components.WebServer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 
 public class DesignPanel extends JPanel implements ComponentListener {
     private Firewall firewall;
     private JFrame frame;
 
-    public DesignPanel(JFrame frame){
+    public DesignPanel(JFrame frame) {
         this.frame = frame;
         frame.addComponentListener(this);
         setResponsiveSize();
@@ -25,10 +24,10 @@ public class DesignPanel extends JPanel implements ComponentListener {
         repaint();
     }
 
-    public ArrayList<InfrastructureComponent> getInfrastructureComponents(){
+    public ArrayList<InfrastructureComponent> getInfrastructureComponents() {
         ArrayList<InfrastructureComponent> components = new ArrayList<InfrastructureComponent>();
-        for(Component c : this.getComponents()){
-            if(c instanceof InfrastructureComponent){
+        for (Component c : this.getComponents()) {
+            if (c instanceof InfrastructureComponent) {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
                 components.add(ic);
             }
@@ -51,8 +50,8 @@ public class DesignPanel extends JPanel implements ComponentListener {
             }
         }
 
-        g.drawString("Prijs: €" + calculateTotalAnnualPrice(), getWidth()-200, 10);
-        g.drawString("Beschikbaarheid: " + calculateTotalAvailability() + "%", getWidth()-200, 25);
+        g.drawString("Prijs: €" + calculateTotalAnnualPrice(), getWidth() - 200, 10);
+        g.drawString("Beschikbaarheid: " + calculateTotalAvailability() + "%", getWidth() - 200, 25);
 
         for (Component c : this.getComponents()) {
             // Draw lines from every component to the firewall
@@ -82,23 +81,26 @@ public class DesignPanel extends JPanel implements ComponentListener {
     }
 
     @Override
-    public void componentMoved(ComponentEvent e) {}
+    public void componentMoved(ComponentEvent e) {
+    }
 
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     // Set panel size so it fits in the parent JFrame
-    public void setResponsiveSize(){
-        setPreferredSize(new Dimension(frame.getWidth()-25, frame.getHeight()-80));
+    public void setResponsiveSize() {
+        setPreferredSize(new Dimension(frame.getWidth() - 25, frame.getHeight() - 80));
     }
 
     // Register component x & y panel values
-    public void determineComponentPositions(){
-        for(Component c : this.getComponents()){
-            if(c instanceof InfrastructureComponent){
+    public void determineComponentPositions() {
+        for (Component c : this.getComponents()) {
+            if (c instanceof InfrastructureComponent) {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
                 ic.setPanelX(c.getX());
                 ic.setPanelY(c.getY());
@@ -106,9 +108,9 @@ public class DesignPanel extends JPanel implements ComponentListener {
         }
     }
 
-    public String calculateTotalAnnualPrice(){
+    public String calculateTotalAnnualPrice() {
         double totalAnnualPrice = 0;
-        for(Component c : this.getComponents()) {
+        for (Component c : this.getComponents()) {
             if (c instanceof InfrastructureComponent) {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
                 totalAnnualPrice += ic.getAnnualPrice();
@@ -117,31 +119,33 @@ public class DesignPanel extends JPanel implements ComponentListener {
         return removeTrailingZeros(totalAnnualPrice);
     }
 
-    public String calculateTotalAvailability(){
-        double totalAvailability = 0;
-        boolean firstValue = true;
-        for(Component c : this.getComponents()) {
+    public String calculateTotalAvailability() {
+        double firewallAvailability = 1;
+        double webAvailability = 1;
+        double databaseAvailability = 1;
+
+        for (Component c : this.getComponents()) {
             if (c instanceof InfrastructureComponent) {
                 InfrastructureComponent ic = (InfrastructureComponent) c;
-                if(firstValue){
-                    System.out.println("firewall: \t" + (1-(ic.getAvailability()/100)));
-                    totalAvailability = (1-(ic.getAvailability()/100));
-                    firstValue = false;
-                } else {
-                    System.out.println("component 1:" + (1-(ic.getAvailability()/100)));
-                    totalAvailability *= (1-(ic.getAvailability()/100));
+                if (ic instanceof Firewall) {
+                    firewallAvailability *= (1 - (ic.getAvailability() / 100));
+                }else if (ic instanceof WebServer) {
+                    webAvailability *= (1 - (ic.getAvailability() / 100));
+                }else if (ic instanceof DatabaseServer) {
+                    databaseAvailability *= (1 - (ic.getAvailability() / 100));
                 }
             }
         }
+        double totalAvailability = (1 - firewallAvailability) * (1 - webAvailability) * (1 - databaseAvailability);
 
-        System.out.println("Resultaat: \t"+ (1-totalAvailability));
+        // System.out.println("Resultaat: \t" + totalAvailability);
 
-        return removeTrailingZeros((double) Math.round(((1-totalAvailability)*100) * 1000d)/1000d);
+        return removeTrailingZeros((double) Math.round((totalAvailability*100) * 1000d)/1000d);
     }
 
     // Remove trailing zeros from a double, example: 90.0 becomes 90
-    public String removeTrailingZeros(double number){
-        if(number % 1 == 0){
+    public String removeTrailingZeros(double number) {
+        if (number % 1 == 0) {
             return String.format("%.0f", number);
         } else {
             return String.valueOf(number);

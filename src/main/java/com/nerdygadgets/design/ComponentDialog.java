@@ -64,11 +64,7 @@ public class ComponentDialog extends JDialog implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == jbOK) {
-            isOK = true;
-        } else {
-            isOK = false;
-        }
+        isOK = e.getSource() == jbOK;
         setVisible(false);
     }
 }
