@@ -1,20 +1,21 @@
 package com.nerdygadgets.design;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nerdygadgets.design.components.DatabaseServer;
 import com.nerdygadgets.design.components.Firewall;
 import com.nerdygadgets.design.components.InfrastructureComponent;
 import com.nerdygadgets.design.components.WebServer;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class DesignFrame extends JFrame implements ActionListener, WindowStateListener {
-    private JButton jbSave;
+    private JButton jbSave, jbOpen;
     private JComboBox jcWebservers, jcDatabaseservers;
     private InfrastructureComponent[] webservers, databaseservers;
     private DesignPanel designPanel;
@@ -29,9 +30,11 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         jbSave.addActionListener(this);
         add(jbSave);
 
+        jbOpen = new JButton("Open File");
+        jbOpen.addActionListener(this);
+        add(jbOpen);
+
         designPanel = new DesignPanel(this);
-
-
 
         WebServer w1 = new WebServer(designPanel, "HAL9001W", 80, 2200);
         WebServer w2 = new WebServer(designPanel, "HAL9002W", 90, 3200);
@@ -54,6 +57,8 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         jcDatabaseservers.addActionListener(this);
 
         add(designPanel);
+        designPanel.addFirewall();
+        designPanel.determineComponentPositions();
 
         addWindowStateListener(this);
         setVisible(true);
@@ -62,21 +67,75 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == jbSave){
+        if(e.getSource() == jbSave) {
             ArrayList<InfrastructureComponent> components = designPanel.getInfrastructureComponents();
 
-            // TODO Create json file
+            Gson gson = new GsonBuilder()
+                    .excludeFieldsWithoutExposeAnnotation()
+                    .setPrettyPrinting()
+                    .create();
+            String fileContent = "[";
 
-            // TODO Save file
+            // Make sure panelX and panelY values
+            // are correct for each component
+            designPanel.determineComponentPositions();
+
+            // Convert components on the design panel
+            // to json strings
+            boolean firstValue = true;
+            for (Component c : designPanel.getComponents()) {
+                if (c instanceof InfrastructureComponent) {
+                    InfrastructureComponent ic = (InfrastructureComponent) c;
+                    if(firstValue){
+                        firstValue = false;
+                    } else {
+                        fileContent += ",\n";
+                    }
+                    fileContent += gson.toJson(ic);
+                }
+            }
+            fileContent += "]";
+            System.out.println(fileContent);
+
+            // Save json strings to a file
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Save your Infrastructure Design File");
 
             int userSelection = fileChooser.showSaveDialog(this);
-            
-            if(userSelection == JFileChooser.APPROVE_OPTION) {
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
                 File fileToSave = fileChooser.getSelectedFile();
                 System.out.println("Save as file: " + fileToSave.getAbsolutePath());
+
+                FileWriter file = null;
+                try {
+                    file = new FileWriter(fileToSave.getAbsolutePath());
+                    file.write(fileContent);
+                    file.close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }
+
+        } else if(e.getSource() == jbOpen) {
+            // TODO
+
+            Gson gson = new GsonBuilder()
+                    .excludeFieldsWithoutExposeAnnotation()
+                    .create();
+
+            JFileChooser choice = new JFileChooser();
+            int option = choice.showOpenDialog(this);
+            if(option == JFileChooser.APPROVE_OPTION){
+                File file = choice.getSelectedFile();
+                try {
+                    Scanner reader = new Scanner(file);
+                    InfrastructureComponent ic = gson.fromJson(new FileReader(file), InfrastructureComponent.class);
+                } catch (FileNotFoundException fileNotFoundException) {
+                    fileNotFoundException.printStackTrace();
+                }
+            }
+
         } else if(e.getSource() == jcDatabaseservers){
             // Search for selected item in webserver dropdown menu
             for(InfrastructureComponent dbs : databaseservers){
@@ -88,6 +147,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                 }
             }
             jcDatabaseservers.setSelectedIndex(-1);
+
         } else if(e.getSource() == jcWebservers){
             // Search for selected item in webserver dropdown menu
             for(InfrastructureComponent ws : webservers){
@@ -105,7 +165,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
     @Override
     public void windowStateChanged(WindowEvent e) {
-        System.out.println("a");
         designPanel.setResponsiveSize();
     }
 }

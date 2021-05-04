@@ -1,5 +1,7 @@
 package com.nerdygadgets.design.components;
 
+import com.google.gson.annotations.Expose;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.MouseEvent;
@@ -9,18 +11,22 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public abstract class InfrastructureComponent extends JLabel {
-    private volatile int screenX = 0, screenY = 0, myX = 0, myY = 0;
     private BufferedImage icon;
     private JPanel parentPanel;
-    private String name;
+    private volatile int screenX = 0, screenY = 0, myX = 0, myY = 0;
+    @Expose
+    private String name, type;
+    @Expose
     private double availability, annualPrice;
+    @Expose
+    private int panelX, panelY;
 
     public InfrastructureComponent(JPanel parentPanel, String name, double availability, double annualPrice) {
         this.parentPanel = parentPanel;
         this.name = name;
         this.availability = availability;
         this.annualPrice = annualPrice;
-        assignIcon();
+        assignIconAndType();
 
         // Drag and drop functionality
         addMouseListener(new MouseListener() {
@@ -112,15 +118,20 @@ public abstract class InfrastructureComponent extends JLabel {
         parentPanel.repaint();
     }
 
-    public void assignIcon(){
+    public void assignIconAndType(){
         try{
-            // Determine icon
+            // Determine icon and type
             if(this instanceof Firewall){
                 icon = ImageIO.read(this.getClass().getResource("../icons/firewall.png"));
+                type = "firewall";
             } else if(this instanceof DatabaseServer){
                 icon = ImageIO.read(this.getClass().getResource("../icons/databaseserver.png"));
+                type = "databaseserver";
             } else if(this instanceof WebServer){
                 icon = ImageIO.read(this.getClass().getResource("../icons/webserver.png"));
+                type = "webserver";
+            } else {
+                System.err.println("Invalid component type");
             }
         } catch(IOException e){
             System.err.println("File not found");
@@ -130,7 +141,7 @@ public abstract class InfrastructureComponent extends JLabel {
 
         // Assign icon
         setIcon(new ImageIcon(icon));
-        setBounds(0, 0, 64, 64);
+        setBounds(getParentPanelWidth()/2, getParentPanelHeight()/2, 64, 64);
         setOpaque(false);
     }
 
@@ -146,6 +157,10 @@ public abstract class InfrastructureComponent extends JLabel {
         return name;
     }
 
+    public String getType() {
+        return type;
+    }
+
     public double getAvailability() {
         return availability;
     }
@@ -156,6 +171,22 @@ public abstract class InfrastructureComponent extends JLabel {
 
     public JPanel getParentPanel() {
         return parentPanel;
+    }
+
+    public int getPanelX() {
+        return panelX;
+    }
+
+    public void setPanelX(int panelX) {
+        this.panelX = panelX;
+    }
+
+    public int getPanelY() {
+        return panelY;
+    }
+
+    public void setPanelY(int panelY) {
+        this.panelY = panelY;
     }
 
     @Override
