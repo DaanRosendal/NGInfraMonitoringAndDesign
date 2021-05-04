@@ -129,13 +129,13 @@ public abstract class InfrastructureComponent extends JLabel {
         try{
             // Determine icon and type
             if(this instanceof Firewall){
-                icon = ImageIO.read(this.getClass().getResource("../icons/firewall.png"));
+                icon = ImageIO.read(this.getClass().getResource("/icons/firewall.png"));
                 type = "firewall";
             } else if(this instanceof DatabaseServer){
-                icon = ImageIO.read(this.getClass().getResource("../icons/databaseserver.png"));
+                icon = ImageIO.read(this.getClass().getResource("/icons/databaseserver.png"));
                 type = "databaseserver";
             } else if(this instanceof WebServer){
-                icon = ImageIO.read(this.getClass().getResource("../icons/webserver.png"));
+                icon = ImageIO.read(this.getClass().getResource("/icons/webserver.png"));
                 type = "webserver";
             } else {
                 System.err.println("Invalid component type");
