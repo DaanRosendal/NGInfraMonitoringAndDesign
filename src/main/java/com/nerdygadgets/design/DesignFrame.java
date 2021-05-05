@@ -134,22 +134,22 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                     JsonParser parser = new JsonParser();
 
                     // Convert file to a json array
-                    JsonArray a = (JsonArray) parser.parse(new FileReader(file.getAbsolutePath()));
+                    JsonArray array = (JsonArray) parser.parse(new FileReader(file.getAbsolutePath()));
 
                     // Clear the panel
                     designPanel.removeAll();
 
                     // Loop over the json array to retrieve the infrastructure components
-                    for(Object o : a){
-                        JsonObject jo = (JsonObject) o;
+                    for(Object object : array){
+                        JsonObject jsonObject = (JsonObject) object;
 
                         // Convert json component values to usable variables
-                        String name = jo.get("name").getAsString();
-                        String type = jo.get("type").getAsString();
-                        double availability = jo.get("availability").getAsDouble();
-                        double annualPrice = jo.get("annualPrice").getAsDouble();
-                        int panelX = jo.get("panelX").getAsInt();
-                        int panelY = jo.get("panelY").getAsInt();
+                        String name = jsonObject.get("name").getAsString();
+                        String type = jsonObject.get("type").getAsString();
+                        double availability = jsonObject.get("availability").getAsDouble();
+                        double annualPrice = jsonObject.get("annualPrice").getAsDouble();
+                        int panelX = jsonObject.get("panelX").getAsInt();
+                        int panelY = jsonObject.get("panelY").getAsInt();
 
                         // Create infrastructure components
                         if(type.equals("firewall")){
