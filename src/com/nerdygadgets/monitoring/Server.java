@@ -1,11 +1,22 @@
 package com.nerdygadgets.monitoring;
 
-import java.util.Random;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.time.Duration;
+
+import java.net.http.HttpResponse;
 
 public class Server {
 
     private String name, ip;
-    private int diskMbUsed, diskMbTotal, cpuUsage;
+    private double cpuUsage;
+    private int diskMbUsed, diskMbTotal;
     private boolean online;
 
     public Server(String name, String ip) {
@@ -15,16 +26,36 @@ public class Server {
     }
 
     public void retrieveData() {
-        // TODO: Actually retrieve data from server
-        Random random = new Random();
-        this.online = random.nextBoolean();
-        this.diskMbTotal = random.nextInt(1024*16);
-        this.diskMbUsed = random.nextInt(diskMbTotal);
-        this.cpuUsage = random.nextInt(100);
+        try {
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(100)).build();
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(String.format("http://%s:8080/status", ip)))
+                    .GET()
+                    .build();
+
+            String response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString()).body();
+
+            JsonObject obj = JsonParser.parseString(response).getAsJsonObject().get("data").getAsJsonObject();
+            JsonObject hdd = obj.get("hdd").getAsJsonObject();
+
+            this.online = true;
+            this.cpuUsage = obj.get("cpu").getAsDouble();
+            this.diskMbUsed = hdd.get("usedMb").getAsInt();
+            this.diskMbTotal = hdd.get("totalMb").getAsInt();
+
+        }catch(java.net.http.HttpConnectTimeoutException ex) {
+            this.online = false;
+        }catch(IOException | InterruptedException | JsonSyntaxException ex) {
+            this.online = false;
+            ex.printStackTrace();
+        }
+
     }
 
     /**
      * Get name of server
+     *
      * @return servername
      */
     public String getName() {
@@ -33,6 +64,7 @@ public class Server {
 
     /**
      * Get the IP of this server
+     *
      * @return server IP
      */
     public String getIp() {
@@ -41,6 +73,7 @@ public class Server {
 
     /**
      * Check if the server is online
+     *
      * @return true if online
      */
     public boolean isOnline() {
@@ -49,6 +82,7 @@ public class Server {
 
     /**
      * Get total storage used in megabytes
+     *
      * @return storage usage in mb
      */
     public int getDiskMbUsed() {
@@ -57,6 +91,7 @@ public class Server {
 
     /**
      * Get total storage size in megabytes
+     *
      * @return total storage size in mb
      */
     public int getDiskMbTotal() {
@@ -65,9 +100,10 @@ public class Server {
 
     /**
      * Get the current CPU utilisation for this server as a percentage between 0-100
+     *
      * @return current CPU utilisation
      */
-    public int getCpuUsage() {
+    public double getCpuUsage() {
         return cpuUsage;
     }
 

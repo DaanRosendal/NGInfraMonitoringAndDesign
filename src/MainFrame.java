@@ -33,7 +33,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == jbMonitoring) {
             // Add dummy servers
-            MonitoringFrame mf = new MonitoringFrame(new Server("WS1", "192.168.2.1"), new Server("WS2", "192.168.2.2"), new Server("DB1", "192.168.3.2"), new Server("DB2", "192.168.3.1"));
+            MonitoringFrame mf = new MonitoringFrame(new Server("WS1", "192.168.2.2"), new Server("WS2", "192.168.2.3"), new Server("DB1", "192.168.3.2"), new Server("DB2", "192.168.3.3"), new Server("DB3", "192.168.3.4"));
         } else if (e.getSource() == jbDesign) {
             DesignFrame df = new DesignFrame();
         }
