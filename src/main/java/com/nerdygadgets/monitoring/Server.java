@@ -16,7 +16,6 @@ public class Server {
 
     public void retrieveData() {
         // TODO: Actually retrieve data from server
-
         Random random = new Random();
         this.online = random.nextBoolean();
         this.diskMbTotal = random.nextInt(1024*16);
