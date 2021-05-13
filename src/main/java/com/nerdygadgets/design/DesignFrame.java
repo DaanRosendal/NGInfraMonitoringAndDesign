@@ -1,10 +1,7 @@
 package com.nerdygadgets.design;
 
 import com.google.gson.*;
-import com.nerdygadgets.design.components.DatabaseServer;
-import com.nerdygadgets.design.components.Firewall;
-import com.nerdygadgets.design.components.InfrastructureComponent;
-import com.nerdygadgets.design.components.WebServer;
+import com.nerdygadgets.design.components.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +9,10 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Scanner;
 
+import static javax.swing.JOptionPane.showMessageDialog;
+
 public class DesignFrame extends JFrame implements ActionListener, WindowStateListener {
-    private JButton jbSave, jbOpen;
+    private JButton jbSave, jbOpen, jbCustomComponent;
     private JComboBox jcWebservers, jcDatabaseservers;
     private InfrastructureComponent[] webservers, databaseservers;
     private DesignPanel designPanel;
@@ -43,10 +42,10 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         WebServer w3 = new WebServer(designPanel, "HAL9003W", 95, 5100);
         webservers = new InfrastructureComponent[]{w1, w2, w3};
         jcWebservers = new JComboBox(webservers);
-        jcWebservers.setRenderer(new MyComboBoxRenderer("Webserver"));
+        jcWebservers.setRenderer(new MyComboBoxRenderer("Web Server"));
         jcWebservers.setSelectedIndex(-1);
-        add(jcWebservers);
         jcWebservers.addActionListener(this);
+        add(jcWebservers);
 
         // Create JComboBox for databaseservers
         DatabaseServer db1 = new DatabaseServer(designPanel, "HAL9001DB", 90, 5100);
@@ -54,10 +53,15 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         DatabaseServer db3 = new DatabaseServer(designPanel, "HAL9003DB", 98, 12200);
         databaseservers = new InfrastructureComponent[]{db1, db2, db3};
         jcDatabaseservers = new JComboBox(databaseservers);
-        jcDatabaseservers.setRenderer(new MyComboBoxRenderer("Databaseserver"));
+        jcDatabaseservers.setRenderer(new MyComboBoxRenderer("Database Server"));
         jcDatabaseservers.setSelectedIndex(-1);
-        add(jcDatabaseservers);
         jcDatabaseservers.addActionListener(this);
+        add(jcDatabaseservers);
+
+        // Create JButton for custom components
+        jbCustomComponent = new JButton("Custom Component");
+        jbCustomComponent.addActionListener(this);
+        add(jbCustomComponent);
 
         add(designPanel);
         designPanel.updateComponentPositions();
@@ -128,19 +132,24 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             int option = fileChooser.showOpenDialog(this);
             if(option == JFileChooser.APPROVE_OPTION){
                 File file = fileChooser.getSelectedFile();
+                JsonArray array = null;
                 try {
                     // Create file reader
                     Scanner reader = new Scanner(file);
                     JsonParser parser = new JsonParser();
 
                     // Convert file to a json array
-                    JsonArray array = (JsonArray) parser.parse(new FileReader(file.getAbsolutePath()));
+                    array = (JsonArray) parser.parse(new FileReader(file.getAbsolutePath()));
+                } catch (FileNotFoundException fileNotFoundException) {
+                    fileNotFoundException.printStackTrace();
+                }
 
-                    // Clear the panel
-                    designPanel.removeAll();
+                // Clear the panel
+                designPanel.removeAll();
 
+                try {
                     // Loop over the json array to retrieve the infrastructure components
-                    for(Object object : array){
+                    for (Object object : array) {
                         JsonObject jsonObject = (JsonObject) object;
 
                         // Convert json component values to usable variables
@@ -152,13 +161,13 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                         int panelY = jsonObject.get("panelY").getAsInt();
 
                         // Create infrastructure components
-                        if(type.equals("firewall")){
+                        if (type.equals("Firewall")) {
                             Firewall fw = new Firewall(designPanel, name, availability, annualPrice, panelX, panelY);
                             designPanel.add(fw);
-                        } else if(type.equals("databaseserver")){
+                        } else if (type.equals("Database Server")) {
                             DatabaseServer dbs = new DatabaseServer(designPanel, name, availability, annualPrice, panelX, panelY);
                             designPanel.add(dbs);
-                        } else if(type.equals("webserver")){
+                        } else if (type.equals("Web Server")) {
                             WebServer ws = new WebServer(designPanel, name, availability, annualPrice, panelX, panelY);
                             designPanel.add(ws);
                         } else {
@@ -166,13 +175,15 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                         }
                     }
 
-                    // Refresh designPanel
-                    designPanel.repaint();
-                } catch (FileNotFoundException fileNotFoundException) {
-                    fileNotFoundException.printStackTrace();
+                } catch (Exception ex){
+                    System.err.println(ex.getMessage());
+                    showMessageDialog(this, "The file you are trying to open is incompatible " +
+                            "with this design tool", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            }
 
+                // Refresh designPanel
+                designPanel.repaint();
+            }
         // If an item from the JComboBox databaseservers was picked
         } else if(e.getSource() == jcDatabaseservers){
             // Search for selected item in webserver dropdown menu
@@ -200,6 +211,22 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             }
             // Make dropdown show title
             jcWebservers.setSelectedIndex(-1);
+        } else if(e.getSource() == jbCustomComponent){
+            CustomComponentDialog dialog = new CustomComponentDialog(this);
+            if(dialog.isOk()){
+                String type = dialog.getComponentType();
+                String name = dialog.getComponentName();
+                double price = dialog.getPrice();
+                double availability = dialog.getAvailability();
+
+                if(type.equals("Database Server")){
+                    DatabaseServer dbs = new DatabaseServer(designPanel, name, availability, price);
+                    designPanel.add(dbs);
+                } else if(type.equals("Web Server")){
+                    WebServer ws = new WebServer(designPanel, name, availability, price);
+                    designPanel.add(ws);
+                }
+            }
         }
 
         designPanel.repaint();
