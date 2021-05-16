@@ -35,7 +35,7 @@ public class MainFrame extends JFrame implements ActionListener {
         if (e.getSource() == jbMonitoring) {
             // Check if frame has been instantiated
             if(monitoringFrame == null){
-                monitoringFrame = new MonitoringFrame(new Server("WS1", "192.168.2.2"), new Server("WS2", "192.168.2.3"), new Server("DB1", "192.168.3.2"), new Server("DB2", "192.168.3.3"), new Server("DB3", "192.168.3.4"));
+                monitoringFrame = new MonitoringFrame(new Server("WS1", "192.168.2.2"), new Server("WS2", "192.168.2.3"), new Server("DBS1", "192.168.3.2"), new Server("DBS2", "192.168.3.3"));
             } else {
                 monitoringFrame.toFront();
                 monitoringFrame.setVisible(true);

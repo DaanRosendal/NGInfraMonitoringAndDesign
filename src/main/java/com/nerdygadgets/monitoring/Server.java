@@ -8,15 +8,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.time.Duration;
-
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class Server {
 
-    private String name, ip;
+    private final String name;
+    private final String ip;
     private double cpuUsage;
-    private int diskMbUsed, diskMbTotal;
+    private int diskMbUsed, diskMbTotal, uptime;
     private boolean online;
 
     public Server(String name, String ip) {
@@ -39,14 +39,13 @@ public class Server {
             JsonObject obj = JsonParser.parseString(response).getAsJsonObject().get("data").getAsJsonObject();
             JsonObject hdd = obj.get("hdd").getAsJsonObject();
 
-            this.online = true;
             this.cpuUsage = obj.get("cpu").getAsDouble();
             this.diskMbUsed = hdd.get("usedMb").getAsInt();
             this.diskMbTotal = hdd.get("totalMb").getAsInt();
 
-        }catch(java.net.http.HttpConnectTimeoutException ex) {
+        } catch (java.net.http.HttpConnectTimeoutException ex) {
             this.online = false;
-        }catch(IOException | InterruptedException | JsonSyntaxException ex) {
+        } catch (IOException | InterruptedException | JsonSyntaxException ex) {
             this.online = false;
             ex.printStackTrace();
         }
@@ -72,12 +71,21 @@ public class Server {
     }
 
     /**
-     * Check if the server is online
+     * Check if the server is online and the service is running according to HAProxy
      *
      * @return true if online
      */
     public boolean isOnline() {
         return online;
+    }
+
+    /**
+     * Change the online status of this server
+     *
+     * @param online true if offline
+     */
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 
     /**
@@ -107,5 +115,41 @@ public class Server {
         return cpuUsage;
     }
 
+    /**
+     * Return the up- or downtime of this server
+     *
+     * @return up- or downtime in seconds
+     */
+    public int getUptime() {
+        return uptime;
+    }
+
+    /**
+     * Return the formatted up- or downtime of this server
+     *
+     * @return formatted up- or downtime in seconds
+     */
+    public String getFormattedUptime() {
+        return formatSeconds(uptime);
+    }
+
+    /**
+     * Set the up- or downtime of this server
+     *
+     * @param uptime uptime in seconds
+     */
+    public void setUptime(int uptime) {
+        this.uptime = uptime;
+    }
+
+    /**
+     * Format seconds as time
+     *
+     * @param seconds seconds
+     * @return hh:mm:ss date format
+     */
+    public static String formatSeconds(int seconds) {
+        return String.format("%02d:%02d:%02d", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+    }
 
 }

@@ -25,13 +25,34 @@ public class MonitoringFrame extends JFrame implements ActionListener {
 
         setLocationRelativeTo(null);
 
+
+        // Increase the uptime once every second to make the updating progress look more fluid
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Arrays.stream(servers).forEach(server -> server.setUptime(server.getUptime() + 1));
+                panel.websiteUptime++;
+                panel.databaseUptime++;
+                panel.update();
+            }
+        }, 1000L, 1000L);
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Arrays.stream(servers).forEach(Server::retrieveData);
+                panel.cacheUptime();
+                panel.update();
+            }
+        }, 0L, 3 * 1000L);
+
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 Arrays.stream(servers).forEach(Server::retrieveData);
                 panel.update();
             }
-        }, 3 * 1000L, 3 * 1000L);
+        }, 0L, 3 * 1000L);
     }
 
     @Override
