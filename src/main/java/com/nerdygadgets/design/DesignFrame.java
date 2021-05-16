@@ -59,6 +59,14 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         add(jcDatabaseservers);
         jcDatabaseservers.addActionListener(this);
 
+        jbCustomComponent = new JButton("Custom Component");
+        jbCustomComponent.addActionListener(this);
+        add(jbCustomComponent);
+
+        jbOptimize = new JButton("Optimize");
+        jbOptimize.addActionListener(this);
+        add(jbOptimize);
+
         add(designPanel);
         designPanel.updateComponentPositions();
 
@@ -115,7 +123,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                 }
             }
 
-        // If the open file button was clicked
+            // If the open file button was clicked
         } else if(e.getSource() == jbOpen) {
             // Configure gson
             Gson gson = new GsonBuilder()
@@ -172,7 +180,6 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                     fileNotFoundException.printStackTrace();
                 }
             }
-
         // If an item from the JComboBox databaseservers was picked
         } else if(e.getSource() == jcDatabaseservers){
             // Search for selected item in webserver dropdown menu
@@ -187,7 +194,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             // Make dropdown show title
             jcDatabaseservers.setSelectedIndex(-1);
 
-        // If an item from the JComboBox webservers was picked
+            // If an item from the JComboBox webservers was picked
         } else if(e.getSource() == jcWebservers){
             // Search for selected item in webserver dropdown menu
             for(InfrastructureComponent ws : webservers){
@@ -200,6 +207,26 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             }
             // Make dropdown show title
             jcWebservers.setSelectedIndex(-1);
+        } else if(e.getSource() == jbCustomComponent){
+            CustomComponentDialog dialog = new CustomComponentDialog(this);
+            if(dialog.isOk()){
+                String type = dialog.getComponentType();
+                String name = dialog.getComponentName();
+                double price = dialog.getPrice();
+                double availability = dialog.getAvailability();
+
+                if(type.equals("Database Server")){
+                    DatabaseServer dbs = new DatabaseServer(designPanel, name, availability, price);
+                    designPanel.add(dbs);
+                    databaseServers.add(dbs);
+                    jcDatabaseservers.addItem(dbs);
+                } else if(type.equals("Web Server")){
+                    WebServer ws = new WebServer(designPanel, name, availability, price);
+                    designPanel.add(ws);
+                    webServers.add(ws);
+                    jcWebservers.addItem(ws);
+                }
+            }
         }
 
         designPanel.repaint();
@@ -209,5 +236,48 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     @Override
     public void windowStateChanged(WindowEvent e) {
         designPanel.setResponsiveSize();
+    }
+
+    public void optimize(double desiredAvailability){
+        Firewall firewall = designPanel.getFirewall();
+        ArrayList<DatabaseServer> dbs = new ArrayList<DatabaseServer>();
+        ArrayList<WebServer> ws = new ArrayList<WebServer>();
+
+        ArrayList<ArrayList<Object>> validSetups;
+
+        // call recursive function that adds components to a setup
+        // if the setup complies with the desired availability, add to validSetups
+
+        double highestAvailability = 0;
+    }
+
+    // recursive function that builds setups
+    // when to break&wipe or break&save the setup?
+
+    public double calculateAvailability(Firewall fw, ArrayList<DatabaseServer> dbs, ArrayList<WebServer> ws){
+        double firewallAvailability = 1;
+        double webAvailability = 1;
+        double databaseAvailability = 1;
+
+        firewallAvailability *= (1 - (fw.getAvailability() / 100));
+
+        if(dbs.isEmpty()){
+            System.err.println("The database servers array is empty");
+        } else {
+            for(DatabaseServer db : dbs){
+                databaseAvailability *= (1 - (db.getAvailability() / 100));
+            }
+        }
+
+        if(ws.isEmpty()){
+            System.err.println("The web servers array is empty");
+        } else {
+            for(WebServer w : ws){
+                webAvailability *= (1 - (w.getAvailability() / 100));
+            }
+        }
+
+        double totalAvailability = (1 - firewallAvailability) * (1 - webAvailability) * (1 - databaseAvailability);
+        return totalAvailability;
     }
 }

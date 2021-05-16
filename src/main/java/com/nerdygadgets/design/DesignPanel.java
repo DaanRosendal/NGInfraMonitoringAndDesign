@@ -139,4 +139,8 @@ public class DesignPanel extends JPanel implements ComponentListener {
             return String.valueOf(number);
         }
     }
+
+    public Firewall getFirewall() {
+        return firewall;
+    }
 }
