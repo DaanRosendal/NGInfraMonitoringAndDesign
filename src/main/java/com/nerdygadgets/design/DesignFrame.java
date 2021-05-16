@@ -7,14 +7,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static javax.swing.JOptionPane.showMessageDialog;
 
 public class DesignFrame extends JFrame implements ActionListener, WindowStateListener {
-    private JButton jbSave, jbOpen, jbCustomComponent;
+    private JButton jbSave, jbOpen, jbCustomComponent, jbOptimize;
     private JComboBox jcWebservers, jcDatabaseservers;
-    private InfrastructureComponent[] webservers, databaseservers;
+    private ArrayList<WebServer> webServers;
+    private ArrayList<DatabaseServer> databaseServers;
     private DesignPanel designPanel;
 
     public DesignFrame() {
@@ -40,8 +43,8 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         WebServer w1 = new WebServer(designPanel, "HAL9001W", 80, 2200);
         WebServer w2 = new WebServer(designPanel, "HAL9002W", 90, 3200);
         WebServer w3 = new WebServer(designPanel, "HAL9003W", 95, 5100);
-        webservers = new InfrastructureComponent[]{w1, w2, w3};
-        jcWebservers = new JComboBox(webservers);
+        webServers = new ArrayList<WebServer>(Arrays.asList(w1, w2, w3));
+        jcWebservers = new JComboBox(webServers.toArray());
         jcWebservers.setRenderer(new MyComboBoxRenderer("Web Server"));
         jcWebservers.setSelectedIndex(-1);
         jcWebservers.addActionListener(this);
@@ -51,14 +54,13 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         DatabaseServer db1 = new DatabaseServer(designPanel, "HAL9001DB", 90, 5100);
         DatabaseServer db2 = new DatabaseServer(designPanel, "HAL9002DB", 95, 7700);
         DatabaseServer db3 = new DatabaseServer(designPanel, "HAL9003DB", 98, 12200);
-        databaseservers = new InfrastructureComponent[]{db1, db2, db3};
-        jcDatabaseservers = new JComboBox(databaseservers);
+        databaseServers = new ArrayList<DatabaseServer>(Arrays.asList(db1, db2, db3));
+        jcDatabaseservers = new JComboBox(databaseServers.toArray());
         jcDatabaseservers.setRenderer(new MyComboBoxRenderer("Database Server"));
         jcDatabaseservers.setSelectedIndex(-1);
         jcDatabaseservers.addActionListener(this);
         add(jcDatabaseservers);
 
-        // Create JButton for custom components
         jbCustomComponent = new JButton("Custom Component");
         jbCustomComponent.addActionListener(this);
         add(jbCustomComponent);
@@ -187,7 +189,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         // If an item from the JComboBox databaseservers was picked
         } else if(e.getSource() == jcDatabaseservers){
             // Search for selected item in webserver dropdown menu
-            for(InfrastructureComponent dbs : databaseservers){
+            for(InfrastructureComponent dbs : databaseServers){
                 if(dbs.toString().equals(String.valueOf(jcDatabaseservers.getSelectedItem()))){
                     // Add selected item to the design
                     DatabaseServer dbServer = new DatabaseServer(dbs.getParentPanel(), dbs.getComponentName(), dbs.getAvailability(), dbs.getAnnualPrice());
@@ -201,7 +203,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         // If an item from the JComboBox webservers was picked
         } else if(e.getSource() == jcWebservers){
             // Search for selected item in webserver dropdown menu
-            for(InfrastructureComponent ws : webservers){
+            for(InfrastructureComponent ws : webServers){
                 if(ws.toString().equals(String.valueOf(jcWebservers.getSelectedItem()))){
                     // Add selected item to the design
                     WebServer webServer = new WebServer(ws.getParentPanel(), ws.getComponentName(), ws.getAvailability(), ws.getAnnualPrice());
@@ -222,9 +224,13 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                 if(type.equals("Database Server")){
                     DatabaseServer dbs = new DatabaseServer(designPanel, name, availability, price);
                     designPanel.add(dbs);
+                    databaseServers.add(dbs);
+                    jcDatabaseservers.addItem(dbs);
                 } else if(type.equals("Web Server")){
                     WebServer ws = new WebServer(designPanel, name, availability, price);
                     designPanel.add(ws);
+                    webServers.add(ws);
+                    jcWebservers.addItem(ws);
                 }
             }
         }

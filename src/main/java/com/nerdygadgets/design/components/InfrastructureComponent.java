@@ -122,8 +122,6 @@ public abstract class InfrastructureComponent extends JLabel {
         }
     }
 
-
-
     public void assignIconAndType(){
         try{
             // Determine icon and type
