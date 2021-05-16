@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 public class MonitoringPanel extends JPanel {
 
     private final Server[] servers;
-    private boolean websiteOnline;
-    public int websiteUptime;
+    private boolean websiteOnline, databaseOnline;
+    public int websiteUptime, databaseUptime;
 
     public MonitoringPanel(Server... servers) {
         this.setPreferredSize(new Dimension(600, 300));
@@ -36,10 +36,24 @@ public class MonitoringPanel extends JPanel {
         //bodge something together to prevent needing to save the positions of the JLabels in memory
 
         //Website uptime:
-        String uptime = websiteOnline ? "Uptime" : "Downtime";
-        this.getComponent(0).setForeground(websiteOnline ? Color.decode("#00c229") : Color.RED);
+        String uptime = websiteOnline && databaseOnline ? "Uptime" : "Downtime";
+        if (websiteOnline && !databaseOnline) {
+            // If only the databases are offline, we can assume that the total downtime is just the downtime of the databases
+            ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(this.databaseUptime));
+        }else if (!websiteOnline && databaseOnline) {
+            // If only the webservers are offline, we can assume that the total downtime is just the downtime of the webservers
+            ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(this.websiteUptime));
+        }else if (!websiteOnline && !databaseOnline) {
+            // If all servers are offline, we can assume that the highest downtime is the total downtime
+            ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(Integer.max(websiteUptime, databaseUptime)));
+        }else if (websiteOnline && databaseOnline) {
+            // If all servers are online, we can assume that the lowest uptime is the total uptime
+            ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(Integer.min(websiteUptime, databaseUptime)));
+        }
+
+        this.getComponent(0).setForeground(websiteOnline && databaseOnline ? Color.decode("#00c229") : Color.RED);
         ((JLabel) this.getComponent(0)).setText("https://nerdygadgets.shop");
-        ((JLabel) this.getComponent(1)).setText(uptime + ":" + Server.formatSeconds(this.websiteUptime));
+
 
         //Server uptime:
         for (int i = 1; i <= servers.length; i++) {
@@ -83,6 +97,12 @@ public class MonitoringPanel extends JPanel {
                 if (csv[0].equals("nerdygadgets.shop_ipv4") && csv[1].equals("BACKEND")) {
                     this.websiteOnline = csv[17].equals("UP");
                     this.websiteUptime = Integer.valueOf(csv[23]);
+                    continue;
+                }
+
+                if (csv[0].equals("databases_ipv4") && csv[1].equals("BACKEND")) {
+                    this.databaseOnline = csv[17].equals("UP");
+                    this.databaseUptime = Integer.valueOf(csv[23]);
                     continue;
                 }
 

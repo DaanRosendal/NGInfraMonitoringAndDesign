@@ -32,6 +32,7 @@ public class MonitoringFrame extends JFrame implements ActionListener {
             public void run() {
                 Arrays.stream(servers).forEach(server -> server.setUptime(server.getUptime() + 1));
                 panel.websiteUptime++;
+                panel.databaseUptime++;
                 panel.update();
             }
         }, 1000L, 1000L);
