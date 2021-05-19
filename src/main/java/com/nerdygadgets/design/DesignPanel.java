@@ -143,4 +143,23 @@ public class DesignPanel extends JPanel implements ComponentListener {
     public Firewall getFirewall() {
         return firewall;
     }
+
+    public boolean hasWebServer(){
+        for(Component c : this.getComponents()){
+            if(c instanceof WebServer){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasDatabaseServer(){
+        for(Component c : this.getComponents()){
+            if(c instanceof DatabaseServer){
+                System.out.println("test");
+                return true;
+            }
+        }
+        return false;
+    }
 }

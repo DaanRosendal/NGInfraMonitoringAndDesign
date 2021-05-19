@@ -15,7 +15,7 @@ import static javax.swing.JOptionPane.showMessageDialog;
 
 public class DesignFrame extends JFrame implements ActionListener, WindowStateListener {
     // Design interface variables
-    private JButton jbSave, jbOpen, jbCustomComponent, jbOptimize;
+    private JButton jbSave, jbOpen, jbCustomComponent, jbOptimize, jbOptimizeCurrentDesign;
     private JComboBox jcWebservers, jcDatabaseservers;
     private ArrayList<WebServer> webServers;
     private ArrayList<DatabaseServer> databaseServers;
@@ -36,12 +36,19 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     private double minimalCost = Double.MAX_VALUE;
     private int totalSetupCounter = 0;
     private String serverSetup;
+    private int[] optimalWebServerSetup = {};
+    private int[] optimalDatabaseServerSetup = {};
 
     public DesignFrame() {
         setTitle("NerdyGadgets Infrastructure Design Tool");
-        setSize(800, 600);
         setLayout(new FlowLayout());
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+
+        // Set size to 75% of user's screen
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenHeight = screenSize.height;
+        int screenWidth = screenSize.width;
+        setSize(screenWidth/4*3, screenHeight/4*3);
 
         jbSave = new JButton("Save File");
         jbSave.addActionListener(this);
@@ -53,7 +60,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
         designPanel = new DesignPanel(this);
 
-        firewall = new Firewall(designPanel, "pfSense", 99.998, 4000);
+        firewall = new Firewall(designPanel, "pfSense", 99.998, 4000, designPanel.getWidth()/2, designPanel.getHeight()/2);
         designPanel.add(firewall);
 
         // Create JComboBox for webservers
@@ -85,6 +92,10 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         jbOptimize = new JButton("Optimize");
         jbOptimize.addActionListener(this);
         add(jbOptimize);
+
+        jbOptimizeCurrentDesign = new JButton("Optimize Current Design");
+        jbOptimizeCurrentDesign.addActionListener(this);
+        add(jbOptimizeCurrentDesign);
 
         add(designPanel);
         designPanel.updateComponentPositions();
@@ -277,6 +288,15 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                 //milliseconds = duration/1000000
                 System.out.println("duration: " + duration/1000000 + " milliseconds");
             }
+        } else if(e.getSource() == jbOptimizeCurrentDesign){
+            if(!designPanel.hasWebServer()){
+                showMessageDialog(this, "Add a web server before optimizing your current design!", "Error", JOptionPane.ERROR_MESSAGE);
+            } else if(!designPanel.hasDatabaseServer()){
+                showMessageDialog(this, "Add a database server before optimizing your current design!", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                this.maximumServerCount = OptimizationDialog.getDefaultServerLimit();
+                optimize(Double.parseDouble(designPanel.calculateTotalAvailability())/100);
+            }
         }
 
         designPanel.repaint();
@@ -291,6 +311,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     public void optimize(double desiredAvailability){
         resetOptimizationValues();
         this.desiredAvailability = desiredAvailability;
+        System.out.println(desiredAvailability);
 
         for(WebServer w: webServers){
             webServerAvailabilityPerKind = addDoubleElement(webServerAvailabilityPerKind, w.getAvailability()/100);
@@ -308,6 +329,8 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
         LoopWB(0,0);
         System.out.println(totalSetupCounter + " setups considered | Cost: " + minimalCost + " | Setup: " + serverSetup);
+
+        buildOptimizedDesign();
     }
 
     private int LoopWB(int totalWebServers, int currentWebServer){
@@ -363,6 +386,8 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                 if (setupAvailability > desiredAvailability) {
                     if (setupCost < minimalCost) {
                         minimalCost = setupCost;
+                        optimalWebServerSetup = new int[]{};
+                        optimalDatabaseServerSetup = new int[]{};
                         serverSetup = "Fw: 1 | Wb: ";
                         for(int i = 0; i< webServerCountPerKind.length; i++){
                             if(i==0){
@@ -370,6 +395,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                             } else {
                                 serverSetup += "-" + webServerCountPerKind[i];
                             }
+                            optimalWebServerSetup = addIntElement(optimalWebServerSetup, webServerCountPerKind[i]);
                         }
                         serverSetup += " | Db: ";
                         for(int i = 0; i< databaseServerCountPerKind.length; i++){
@@ -378,6 +404,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                             } else {
                                 serverSetup += "-" + databaseServerCountPerKind[i];
                             }
+                            optimalDatabaseServerSetup = addIntElement(optimalDatabaseServerSetup, databaseServerCountPerKind[i]);
                         }
                     }
                     return currentDatabaseServer;
@@ -446,5 +473,36 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
         totalAmountOfDatabaseServers = -1;
         minimalCost = Double.MAX_VALUE;
         totalSetupCounter = 0;
+    }
+
+    private void buildOptimizedDesign(){
+        designPanel.removeAll();
+
+        // Add Firewall
+        firewall = new Firewall(firewall.getParentPanel(), firewall.getComponentName(), firewall.getAvailability(), firewall.getAnnualPrice(),
+                designPanel.getWidth()/2, designPanel.getHeight()/2);
+        designPanel.add(firewall);
+
+        // Add web servers
+        int count = 0;
+        for(int i=0; i<optimalWebServerSetup.length; i++){
+            for(int j=0; j<optimalWebServerSetup[i]; j++){
+                WebServer ws = webServers.get(i);
+                WebServer wsClone = new WebServer(ws.getParentPanel(), ws.getComponentName(), ws.getAvailability(), ws.getAnnualPrice(),
+                        designPanel.getWidth()/4, 110*count++);
+                designPanel.add(wsClone);
+            }
+        }
+
+        // Add database servers
+        count = 0;
+        for(int i=0; i<optimalDatabaseServerSetup.length; i++){
+            for(int j=0; j<optimalDatabaseServerSetup[i]; j++){
+                DatabaseServer dbs = databaseServers.get(i);
+                DatabaseServer dbsClone = new DatabaseServer(dbs.getParentPanel(), dbs.getComponentName(), dbs.getAvailability(), dbs.getAnnualPrice(),
+                        designPanel.getWidth()/4*3, 110*count++);
+                designPanel.add(dbsClone);
+            }
+        }
     }
 }

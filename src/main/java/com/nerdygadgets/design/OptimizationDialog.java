@@ -27,7 +27,7 @@ public class OptimizationDialog extends JDialog implements ActionListener {
         jtfDesiredAvailability = new JTextField(20);
         add(jtfDesiredAvailability);
 
-        jcCustomServerLimit = new JCheckBox("Server Limit");
+        jcCustomServerLimit = new JCheckBox("Custom Server Limit");
         jcCustomServerLimit.setSelected(false);
         add(jcCustomServerLimit);
         jcCustomServerLimit.addActionListener(this);
