@@ -14,6 +14,7 @@ import java.util.Scanner;
 import static javax.swing.JOptionPane.showMessageDialog;
 
 public class DesignFrame extends JFrame implements ActionListener, WindowStateListener {
+    // Design interface variables
     private JButton jbSave, jbOpen, jbCustomComponent, jbOptimize;
     private JComboBox jcWebservers, jcDatabaseservers;
     private ArrayList<WebServer> webServers;
@@ -21,20 +22,20 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     private DesignPanel designPanel;
     private Firewall firewall;
 
-    // For optimization
-    private static int maxLoop = 10;
-    private static int[] wbAantal = {};
-    private static int[] dbAantal = {};
-    private static double[] wbBeschikbaarheid = {};
-    private static double[] wbKosten = {};
-    private static double[] dbBeschikbaarheid = {};
-    private static double[] dbKosten = {};
-    private static int maxWBSrt = -1;
-    private static int maxDBSrt = -1;
-    private static double minBeschikbaarheid = 0.9991;
-    private static double minKosten = Double.MAX_VALUE;
-    private static int totaalTeller = 0;
-    private static String serverset;
+    // Optimization variables
+    private int maximumServerCount;
+    private int[] webServerCountPerKind = {};
+    private int[] databaseServerCountPerKind = {};
+    private double[] webServerAvailabilityPerKind = {};
+    private double[] webServerCostPerKind = {};
+    private double[] databaseServerAvailabilityPerKind = {};
+    private double[] databaseServerCostPerKind = {};
+    private int totalAmountOfWebServers = -1;
+    private int totalAmountOfDatabaseServers = -1;
+    private double desiredAvailability = -1;
+    private double minimalCost = Double.MAX_VALUE;
+    private int totalSetupCounter = 0;
+    private String serverSetup;
 
     public DesignFrame() {
         setTitle("NerdyGadgets Infrastructure Design Tool");
@@ -234,6 +235,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
             }
             // Make dropdown show title
             jcWebservers.setSelectedIndex(-1);
+        // If the custom component button was clicked
         } else if(e.getSource() == jbCustomComponent){
             CustomComponentDialog dialog = new CustomComponentDialog(this);
             if(dialog.isOk()){
@@ -254,8 +256,27 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                     jcWebservers.addItem(ws);
                 }
             }
+        // If the optimize button was clicked
         } else if(e.getSource() == jbOptimize){
-            optimize(0);
+            OptimizationDialog dialog = new OptimizationDialog(this);
+            if(dialog.isOk()){
+                double desiredAvailability = dialog.getDesiredAvailability();
+                if(dialog.isCustomServerLimitEnabled()){
+                    this.maximumServerCount = dialog.getCustomServerLimit();
+                } else {
+                    this.maximumServerCount = OptimizationDialog.getDefaultServerLimit();
+                }
+
+                long startTime = System.nanoTime();
+                optimize(desiredAvailability/100);
+                long endTime = System.nanoTime();
+
+                long duration = (endTime - startTime); // in nanoseconds
+
+                //microseconds = duration/1000
+                //milliseconds = duration/1000000
+                System.out.println("duration: " + duration/1000000 + " milliseconds");
+            }
         }
 
         designPanel.repaint();
@@ -269,146 +290,137 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
     public void optimize(double desiredAvailability){
         resetOptimizationValues();
+        this.desiredAvailability = desiredAvailability;
 
         for(WebServer w: webServers){
-            wbBeschikbaarheid = addDoubleElement(wbBeschikbaarheid, w.getAvailability()/100);
-            wbKosten = addDoubleElement(wbKosten, w.getAnnualPrice());
-            wbAantal = addIntElement(wbAantal, 0);
-            maxWBSrt++;
+            webServerAvailabilityPerKind = addDoubleElement(webServerAvailabilityPerKind, w.getAvailability()/100);
+            webServerCostPerKind = addDoubleElement(webServerCostPerKind, w.getAnnualPrice());
+            webServerCountPerKind = addIntElement(webServerCountPerKind, 0);
+            totalAmountOfWebServers++;
         }
-        System.out.println(Arrays.toString(wbBeschikbaarheid));
 
         for(DatabaseServer d: databaseServers){
-            dbBeschikbaarheid = addDoubleElement(dbBeschikbaarheid, d.getAvailability()/100);
-            dbKosten = addDoubleElement(dbKosten, d.getAnnualPrice());
-            dbAantal = addIntElement(dbAantal, 0);
-            maxDBSrt++;
+            databaseServerAvailabilityPerKind = addDoubleElement(databaseServerAvailabilityPerKind, d.getAvailability()/100);
+            databaseServerCostPerKind = addDoubleElement(databaseServerCostPerKind, d.getAnnualPrice());
+            databaseServerCountPerKind = addIntElement(databaseServerCountPerKind, 0);
+            totalAmountOfDatabaseServers++;
         }
-        System.out.println(Arrays.toString(dbBeschikbaarheid));
-
 
         LoopWB(0,0);
-        System.out.println(totaalTeller + " combinaties onderzocht " + minKosten + " - " + serverset);
+        System.out.println(totalSetupCounter + " setups considered | Cost: " + minimalCost + " | Setup: " + serverSetup);
     }
 
-    private int LoopWB(int totaalSrvrWB,int srvnr){
-        int teller = 0;
-        while(teller<maxLoop-totaalSrvrWB){
-            wbAantal[srvnr]= teller;
-            if (srvnr<maxWBSrt) {
-                LoopWB(teller+totaalSrvrWB,srvnr+1);
+    private int LoopWB(int totalWebServers, int currentWebServer){
+        int count = 0;
+        while(count < maximumServerCount - totalWebServers){
+            webServerCountPerKind[currentWebServer] = count;
+            if(currentWebServer < totalAmountOfWebServers) {
+                LoopWB(count+totalWebServers, currentWebServer+1);
             }
-            if(srvnr==maxWBSrt){
+            if(currentWebServer == totalAmountOfWebServers){
                 LoopDB(0,0);
             }
 
-            teller++;
+            count++;
         }
-        return srvnr;
+        return currentWebServer;
     }
 
-    private int LoopDB(int totaalSrvrDB, int srvnr){
-        int teller = 0;
-        while(teller<maxLoop-totaalSrvrDB){
-            dbAantal[srvnr]= teller;
-            teller++;
-            if (srvnr<maxDBSrt) {
-                LoopDB(teller+totaalSrvrDB,srvnr+1);
+    private int LoopDB(int totalDatabaseServers, int currentDatabaseServer){
+        int count = 0;
+        while(count < maximumServerCount - totalDatabaseServers){
+            databaseServerCountPerKind[currentDatabaseServer] = count;
+            count++;
+            if(currentDatabaseServer < totalAmountOfDatabaseServers) {
+                LoopDB(count+totalDatabaseServers, currentDatabaseServer+1);
             }
 
-            if(srvnr==maxDBSrt) {
-                totaalTeller++;
-                System.out.print(totaalTeller + " Wb: ");
-                for(int i=0; i<wbAantal.length; i++){
+            if(currentDatabaseServer == totalAmountOfDatabaseServers) {
+                /* LOGGING
+                System.out.print(totalSetupCounter + " Wb: ");
+                for(int i = 0; i< webServerCountPerKind.length; i++){
                     if(i==0){
-                        System.out.print(wbAantal[i]);
+                        System.out.print(webServerCountPerKind[i]);
                     } else {
-                        System.out.print("-" + wbAantal[i]);
+                        System.out.print("-" + webServerCountPerKind[i]);
                     }
                 }
                 System.out.print(" | Db: ");
-                for(int i=0; i<dbAantal.length; i++){
+                for(int i = 0; i< databaseServerCountPerKind.length; i++){
                     if(i==0){
-                        System.out.print(dbAantal[i]);
+                        System.out.print(databaseServerCountPerKind[i]);
                     } else {
-                        System.out.print("-" + dbAantal[i]);
+                        System.out.print("-" + databaseServerCountPerKind[i]);
                     }
                 }
-                System.out.println(" -> Besch: " + BerekenBeschikbaarheid() + " | Kost: " + Berekenkosten() + " | Beste: Kost: " + minKosten + " | Set: " + serverset);
+                System.out.println(" -> Besch: " + BerekenBeschikbaarheid() + " | Kost: " + Berekenkosten() + " | Beste: Kost: " + minimalCost + " | Set: " + serverSetup);
+                */
 
-                double berekendeBeschikbaarheid = BerekenBeschikbaarheid();
-                double berekendeKosten = Berekenkosten();
+                totalSetupCounter++;
+                double setupAvailability = calculateAvailabilityOfCurrentSetup();
+                double setupCost = calculateCostOfCurrentSetup();
 
-                if (berekendeBeschikbaarheid > minBeschikbaarheid) {
-                    if (berekendeKosten < minKosten) {
-                        minKosten = berekendeKosten;
-                        serverset = "Fw: 1 | Wb: ";
-                        for(int i=0; i<wbAantal.length; i++){
+                if (setupAvailability > desiredAvailability) {
+                    if (setupCost < minimalCost) {
+                        minimalCost = setupCost;
+                        serverSetup = "Fw: 1 | Wb: ";
+                        for(int i = 0; i< webServerCountPerKind.length; i++){
                             if(i==0){
-                                serverset += wbAantal[i];
+                                serverSetup += webServerCountPerKind[i];
                             } else {
-                                serverset += "-" + wbAantal[i];
+                                serverSetup += "-" + webServerCountPerKind[i];
                             }
                         }
-                        serverset += " | Db: ";
-                        for(int i=0; i<dbAantal.length; i++){
+                        serverSetup += " | Db: ";
+                        for(int i = 0; i< databaseServerCountPerKind.length; i++){
                             if(i==0){
-                                serverset += dbAantal[i];
+                                serverSetup += databaseServerCountPerKind[i];
                             } else {
-                                serverset += "-" + dbAantal[i];
+                                serverSetup += "-" + databaseServerCountPerKind[i];
                             }
                         }
                     }
-                    return srvnr;
+                    return currentDatabaseServer;
                 }
             }
         }
-        return srvnr;
+        return currentDatabaseServer;
     }
 
-    private double BerekenBeschikbaarheid(){
-        double beschikbaarheidFW = 1 - Math.pow((1 - firewall.getAvailability() / 100), 1);
-        double beschikbaarheidWB = 1;
-        double beschikbaarheidDB = 1;
+    private double calculateAvailabilityOfCurrentSetup(){
+        double availabilityFW = 1 - Math.pow((1 - firewall.getAvailability() / 100), 1);
+        double availabilityWB = 1;
+        double availabilityDB = 1;
 
-        beschikbaarheidFW = 1-beschikbaarheidFW;
-
-        for(int i=0; i<wbAantal.length; i++){
-            beschikbaarheidWB *= Math.pow((1 - wbBeschikbaarheid[i]), wbAantal[i]);
+        for(int i = 0; i< webServerCountPerKind.length; i++){
+            availabilityWB *= Math.pow((1 - webServerAvailabilityPerKind[i]), webServerCountPerKind[i]);
         }
-        beschikbaarheidWB = 1-beschikbaarheidWB;
+        availabilityWB = 1-availabilityWB;
 
-        for(int i=0; i<dbAantal.length; i++){
-            beschikbaarheidDB *= Math.pow((1 - dbBeschikbaarheid[i]), dbAantal[i]);
+        for(int i = 0; i< databaseServerCountPerKind.length; i++){
+            availabilityDB *= Math.pow((1 - databaseServerAvailabilityPerKind[i]), databaseServerCountPerKind[i]);
         }
-        beschikbaarheidDB = 1-beschikbaarheidDB;
+        availabilityDB = 1-availabilityDB;
 
-        double totaleBeschikbaarheid = beschikbaarheidFW * beschikbaarheidDB * beschikbaarheidWB;
-        return totaleBeschikbaarheid;
-
-//        double beschikbaarheidFW = 1 - Math.pow((1 - 0.99998), 1);
-//        double beschikbaarheidDB = 1 - Math.pow((1 - dbBeschikbaarheid[0]), dbAantal[0]) * Math.pow((1 - dbBeschikbaarheid[1]), dbAantal[1]) * Math.pow((1 - dbBeschikbaarheid[2]), dbAantal[2]);
-//        double beschikbaarheidWB = 1 - Math.pow((1 - wbBeschikbaarheid[0]), wbAantal[0]) * Math.pow((1 - wbBeschikbaarheid[1]), wbAantal[1]) * Math.pow((1 - wbBeschikbaarheid[2]), wbAantal[2]);
-//        double totaleBeschikbaarheid = beschikbaarheidFW * beschikbaarheidDB * beschikbaarheidWB;
-//
-//        return totaleBeschikbaarheid;
+        double totalAvailability = availabilityFW * availabilityDB * availabilityWB;
+        return totalAvailability;
     }
 
-    private double Berekenkosten(){
-        double kostenFW = firewall.getAnnualPrice();
+    private double calculateCostOfCurrentSetup(){
+        double costFW = firewall.getAnnualPrice();
 
-        double kostenDB = 0;
-        for(int i=0; i<dbAantal.length; i++){
-            kostenDB += (dbAantal[i] * dbKosten[i]);
+        double costDB = 0;
+        for(int i = 0; i< databaseServerCountPerKind.length; i++){
+            costDB += (databaseServerCountPerKind[i] * databaseServerCostPerKind[i]);
         }
 
-        double kostenWB = 0;
-        for(int i=0; i<wbAantal.length; i++){
-            kostenWB += (wbAantal[i] * wbKosten[i]);
+        double costWB = 0;
+        for(int i = 0; i< webServerCountPerKind.length; i++){
+            costWB += (webServerCountPerKind[i] * webServerCostPerKind[i]);
         }
 
-        double totalekosten = kostenFW + kostenDB + kostenWB;
-        return totalekosten;
+        double totalCost = costFW + costDB + costWB;
+        return totalCost;
     }
 
     static double[] addDoubleElement(double[] a, double e) {
@@ -424,15 +436,15 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     }
 
     private void resetOptimizationValues(){
-        wbAantal = new int[]{};
-        dbAantal = new int[]{};
-        wbBeschikbaarheid = new double[]{};
-        wbKosten = new double[]{};
-        dbBeschikbaarheid = new double[]{};
-        dbKosten = new double[]{};
-        maxWBSrt = -1;
-        maxDBSrt = -1;
-        minKosten = Double.MAX_VALUE;
-        totaalTeller = 0;
+        webServerCountPerKind = new int[]{};
+        databaseServerCountPerKind = new int[]{};
+        webServerAvailabilityPerKind = new double[]{};
+        webServerCostPerKind = new double[]{};
+        databaseServerAvailabilityPerKind = new double[]{};
+        databaseServerCostPerKind = new double[]{};
+        totalAmountOfWebServers = -1;
+        totalAmountOfDatabaseServers = -1;
+        minimalCost = Double.MAX_VALUE;
+        totalSetupCounter = 0;
     }
 }
