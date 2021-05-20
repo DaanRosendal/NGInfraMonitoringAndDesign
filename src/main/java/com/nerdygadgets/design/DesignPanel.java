@@ -156,7 +156,6 @@ public class DesignPanel extends JPanel implements ComponentListener {
     public boolean hasDatabaseServer(){
         for(Component c : this.getComponents()){
             if(c instanceof DatabaseServer){
-                System.out.println("test");
                 return true;
             }
         }

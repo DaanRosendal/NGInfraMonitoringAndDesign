@@ -278,15 +278,7 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
                     this.maximumServerCount = OptimizationDialog.getDefaultServerLimit();
                 }
 
-                long startTime = System.nanoTime();
                 optimize(desiredAvailability/100);
-                long endTime = System.nanoTime();
-
-                long duration = (endTime - startTime); // in nanoseconds
-
-                //microseconds = duration/1000
-                //milliseconds = duration/1000000
-                System.out.println("duration: " + duration/1000000 + " milliseconds");
             }
         } else if(e.getSource() == jbOptimizeCurrentDesign){
             if(!designPanel.hasWebServer()){
@@ -309,9 +301,9 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
     }
 
     public void optimize(double desiredAvailability){
+        long startTime = System.nanoTime();
         resetOptimizationValues();
         this.desiredAvailability = desiredAvailability;
-        System.out.println(desiredAvailability);
 
         for(WebServer w: webServers){
             webServerAvailabilityPerKind = addDoubleElement(webServerAvailabilityPerKind, w.getAvailability()/100);
@@ -329,6 +321,13 @@ public class DesignFrame extends JFrame implements ActionListener, WindowStateLi
 
         LoopWB(0,0);
         System.out.println(totalSetupCounter + " setups considered | Cost: " + minimalCost + " | Setup: " + serverSetup);
+
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime); // in nanoseconds
+
+        //microseconds = duration/1000
+        //milliseconds = duration/1000000
+        System.out.println("duration: " + duration/1000000 + " milliseconds");
 
         buildOptimizedDesign();
     }
