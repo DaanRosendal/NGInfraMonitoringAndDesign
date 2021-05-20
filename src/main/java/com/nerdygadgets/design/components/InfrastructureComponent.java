@@ -9,6 +9,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 public abstract class InfrastructureComponent extends JLabel {
     private BufferedImage icon;
@@ -121,20 +122,18 @@ public abstract class InfrastructureComponent extends JLabel {
         }
     }
 
-
-
     public void assignIconAndType(){
         try{
             // Determine icon and type
             if(this instanceof Firewall){
                 icon = ImageIO.read(this.getClass().getResource("/icons/firewall.png"));
-                type = "firewall";
+                type = "Firewall";
             } else if(this instanceof DatabaseServer){
                 icon = ImageIO.read(this.getClass().getResource("/icons/databaseserver.png"));
-                type = "databaseserver";
+                type = "Database Server";
             } else if(this instanceof WebServer){
                 icon = ImageIO.read(this.getClass().getResource("/icons/webserver.png"));
-                type = "webserver";
+                type = "Web Server";
             } else {
                 System.err.println("Invalid component type");
             }
@@ -200,5 +199,9 @@ public abstract class InfrastructureComponent extends JLabel {
     @Override
     public String toString() {
         return name + " (" + removeTrailingZeros(availability) + "%) €" + removeTrailingZeros(annualPrice);
+    }
+
+    public static String convertToPriceFormat(String price){
+        return String.format("%.2f", price);
     }
 }
