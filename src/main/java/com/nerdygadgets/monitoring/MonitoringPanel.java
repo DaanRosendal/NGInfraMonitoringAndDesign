@@ -19,6 +19,7 @@ public class MonitoringPanel extends JPanel {
     private final Server[] servers;
     private boolean websiteOnline, databaseOnline;
     public int websiteUptime, databaseUptime;
+    boolean firstRequest = true;
 
     public MonitoringPanel(Server... servers) {
         this.setPreferredSize(new Dimension(600, 300));
@@ -81,7 +82,7 @@ public class MonitoringPanel extends JPanel {
             String authHeader = "Basic " + new String(encodedAuth);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .timeout(Duration.ofMillis(250))
+                    .timeout(Duration.ofMillis(firstRequest ? 1000 : 250))
                     .uri(URI.create("https://www.nerdygadgets.shop/haproxy?stats;csv"))
                     .header("Authorization", authHeader)
                     .GET()
