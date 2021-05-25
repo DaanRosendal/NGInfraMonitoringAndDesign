@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -17,9 +18,9 @@ import java.util.stream.Collectors;
 public class MonitoringPanel extends JPanel {
 
     private final Server[] servers;
-    private boolean websiteOnline, databaseOnline;
     public int websiteUptime, databaseUptime;
     boolean firstRequest = true;
+    private boolean websiteOnline, databaseOnline;
 
     public MonitoringPanel(Server... servers) {
         this.setPreferredSize(new Dimension(600, 300));
@@ -41,13 +42,13 @@ public class MonitoringPanel extends JPanel {
         if (websiteOnline && !databaseOnline) {
             // If only the databases are offline, we can assume that the total downtime is just the downtime of the databases
             ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(this.databaseUptime));
-        }else if (!websiteOnline && databaseOnline) {
+        } else if (!websiteOnline && databaseOnline) {
             // If only the webservers are offline, we can assume that the total downtime is just the downtime of the webservers
             ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(this.websiteUptime));
-        }else if (!websiteOnline && !databaseOnline) {
+        } else if (!websiteOnline && !databaseOnline) {
             // If all servers are offline, we can assume that the highest downtime is the total downtime
             ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(Integer.max(websiteUptime, databaseUptime)));
-        }else if (websiteOnline && databaseOnline) {
+        } else if (websiteOnline && databaseOnline) {
             // If all servers are online, we can assume that the lowest uptime is the total uptime
             ((JLabel) this.getComponent(1)).setText(uptime + ": " + Server.formatSeconds(Integer.min(websiteUptime, databaseUptime)));
         }
@@ -82,7 +83,7 @@ public class MonitoringPanel extends JPanel {
             String authHeader = "Basic " + new String(encodedAuth);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .timeout(Duration.ofMillis(firstRequest ? 1000 : 250))
+                    .timeout(Duration.ofMillis(firstRequest ? 2500 : 250))
                     .uri(URI.create("https://www.nerdygadgets.shop/haproxy?stats;csv"))
                     .header("Authorization", authHeader)
                     .GET()
@@ -116,10 +117,12 @@ public class MonitoringPanel extends JPanel {
                     server.setUptime(Integer.valueOf(csv[23]));
                 }
             }
+        } catch (HttpConnectTimeoutException ex) {
+            // ignore
         } catch (InterruptedException | IOException e) {
             if (this.websiteOnline) {
                 this.websiteUptime = 0;
-            }else{
+            } else {
                 // Increase website 'downtime' with 3 seconds, since this check is performed every 3 seconds.
                 this.websiteUptime = this.websiteUptime + 3;
             }
